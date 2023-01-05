@@ -1,0 +1,15 @@
+include README.md requirements.txt
+
+# added by check-manifest
+include *.txt
+include tox.ini
+recursive-include pdbx2df *.typed
+
+# added by check-manifest
+include *.yaml
+recursive-include docs *.bat
+recursive-include docs *.ipynb
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+recursive-include images *.png

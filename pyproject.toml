@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=42.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.check-manifest]
+ignore = ["docs/build/doctrees/nbsphinx/notebooks/Examples.ipynb", "docs/build/html/notebooks/Examples.ipynb"]
