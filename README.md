@@ -31,8 +31,8 @@ from pdbx2df import read_pdbx
 pdbx_file = './1vii.cif'
 pdbx = read_pdbx(pdbx_file, category_names=['_entity_poly'])
 fasta_df = pdbx['_entity_poly']
-fasta = fasta_df['pdbx_seq_one_letter_code_can'].to_list()[0]
-# fasta == '
+fasta = fasta_df['pdbx_seq_one_letter_code_can'].to_list()[0]  # 1vii only has one sequence
+# fasta == 'MLSDEDFKAVFGMTRSAFANLPLWKQQNLKKEKGLF'
 ```
 
 3. You can read them simutanously:
