@@ -50,6 +50,3 @@ def test_read_pdbx():
     pd.testing.assert_frame_equal(
         pdbx["_pdbx_nmr_refine"], expected["_pdbx_nmr_refine"]
     )
-
-
-test_read_pdbx()
