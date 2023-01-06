@@ -43,7 +43,7 @@ atoms_df = pdbx['_atom_site']
 fasta_df = pdbx['_entity_poly']
 ```
 
-Put a list of category names to `category_names`, you will get them if they are in the PDBx file.
+Putting a list of category names to `category_names`, you will get them if they are in the PDBx file.
 
 4. You can parse the whole file by using 'all':
 
