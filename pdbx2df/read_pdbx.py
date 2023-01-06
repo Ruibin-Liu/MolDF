@@ -16,7 +16,7 @@ def read_pdbx(pdbx_file: str, block_names: list = None) -> dict:
     Returns:
         A dict of {block_name: pd.DataFrame of the info belongs to the block}
     """
-    data = {}
+    data: dict[str, pd.DataFrame] = {}
     if not block_names:
         return data
     with open(pdbx_file, "r") as pf:
