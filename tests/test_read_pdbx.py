@@ -1,7 +1,7 @@
-import sys
 import os
-import pandas as pd
+import sys
 
+import pandas as pd
 from pdbx2df.read_pdbx import read_pdbx
 
 sys.path.append("..")

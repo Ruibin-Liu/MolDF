@@ -1,5 +1,7 @@
-import pandas as pd
 from collections import defaultdict
+
+import pandas as pd
+
 from .split_line import split_line
 
 
