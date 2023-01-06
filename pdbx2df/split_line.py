@@ -1,6 +1,3 @@
-import shlex
-
-
 def split_line(line: str, delimeter: str = " ") -> list:
     """
     Split a string line into tokens separated by delimeters, assuming all ' and " in the start character
@@ -16,12 +13,12 @@ def split_line(line: str, delimeter: str = " ") -> list:
     words = []
     # wihtout quotes, using shlex
     if '"' not in line and "'" not in line:
-        return shlex.split(line)
+        return line.split(delimeter)
 
     # with quotes
     single_start = False
     double_start = False
-    tmp = []
+    tmp: list[str] = []
     for i, char in enumerate(line):
         # quoted by single quotes ''
         if i == 0 and char == "'":  # line starting with '
