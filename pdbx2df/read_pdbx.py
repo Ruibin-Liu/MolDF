@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from .split_line import split_line
 
