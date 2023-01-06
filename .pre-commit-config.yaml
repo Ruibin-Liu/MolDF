@@ -33,7 +33,7 @@ repos:
         exclude: tests/test_files/1VII.cif
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.9.3
     hooks:
       - id: isort
         files: \.py$
