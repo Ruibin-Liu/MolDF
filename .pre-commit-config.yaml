@@ -30,9 +30,7 @@ repos:
             "flake8-logging-format==0.6.0",
             "flake8-implicit-str-concat==0.2.0",
           ]
-        exclude: tests/test_files
-        extend-ignore: E203
-        max-line-length: 120
+        exclude: tests/test_files/1VII.cif
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
