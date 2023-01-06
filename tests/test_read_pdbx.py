@@ -15,13 +15,13 @@ def test_read_pdbx():
     file_path = [CFD, "test_files", "1VII.cif"]
     test_file = f"{os.sep}".join(file_path)
 
-    # Basic one block read
-    pdbx = read_pdbx(test_file, block_names=["_entry"])
+    # Basic one category read
+    pdbx = read_pdbx(test_file, category_names=["_entry"])
     expected = {"_entry": pd.DataFrame({"id": ["1VII"]})}
     pd.testing.assert_frame_equal(pdbx["_entry"], expected["_entry"])
 
-    # Multiple blocks read
-    pdbx = read_pdbx(test_file, block_names=["_entry", "_entity_name_com"])
+    # Multiple categories read
+    pdbx = read_pdbx(test_file, category_names=["_entry", "_entity_name_com"])
     expected = {
         "_entry": pd.DataFrame({"id": ["1VII"]}),
         "_entity_name_com": pd.DataFrame(
@@ -33,8 +33,8 @@ def test_read_pdbx():
         pdbx["_entity_name_com"], expected["_entity_name_com"]
     )
 
-    # Block with ';'
-    pdbx = read_pdbx(test_file, block_names=["_pdbx_nmr_refine"])
+    # category with ';'
+    pdbx = read_pdbx(test_file, category_names=["_pdbx_nmr_refine"])
     expected = {
         "_pdbx_nmr_refine": pd.DataFrame(
             {
