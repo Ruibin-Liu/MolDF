@@ -12,7 +12,7 @@ repos:
         exclude: WHEEL
       - id: forbid-new-submodules
       - id: trailing-whitespace
-        exclude: .patch
+        exclude: tests/test_files
 
   - repo: https://github.com/psf/black
     rev: 22.3.0
