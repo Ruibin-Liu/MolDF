@@ -95,7 +95,7 @@ def read_pdbx(pdbx_file: str, block_names: list = ["_pdbx_poly_seq_scheme"]) -> 
                             f"""{pdbx_file} block {block_name} has irregular contents:
                             {len(records)} for {len(block_cols)}"""
                         )
-                    record_data = records[len(block_cols):]
+                    record_data = records[len(block_cols) :]
                     for i, rd in enumerate(record_data):
                         col = i % len(block_cols)
                         if block_cols[col] in [

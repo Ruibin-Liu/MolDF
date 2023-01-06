@@ -9,4 +9,4 @@ testpaths = [
 ]
 
 [tool.check-manifest]
-ignore = ["docs/build/doctrees/nbsphinx/notebooks/Examples.ipynb", "docs/build/html/notebooks/Examples.ipynb"]
+ignore = ["tests/test_files/*", "docs/build/doctrees/nbsphinx/notebooks/Examples.ipynb", "docs/build/html/notebooks/Examples.ipynb"]
