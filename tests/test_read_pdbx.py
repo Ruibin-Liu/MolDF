@@ -5,14 +5,14 @@ import pandas as pd
 from pdbx2df.read_pdbx import read_pdbx
 
 sys.path.append("..")
-CWD = os.getcwd()
+CFD = os.path.dirname(__file__)
 
 
 def test_read_pdbx():
     """
     Test read_pdbx function
     """
-    file_path = [CWD, "test_files", "1VII.cif"]
+    file_path = [CFD, "test_files", "1VII.cif"]
     test_file = f"{os.sep}".join(file_path)
 
     # Basic one block read
