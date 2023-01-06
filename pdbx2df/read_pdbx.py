@@ -5,18 +5,20 @@ import pandas as pd  # type: ignore
 from .split_line import split_line
 
 
-def read_pdbx(pdbx_file: str, block_names: list = ["_pdbx_poly_seq_scheme"]) -> dict:
+def read_pdbx(pdbx_file: str, block_names: list = None) -> dict:
     """
     Read a pdbx file block into Pandas DataFrame.
 
     Args:
-        pdbx_file: file path for a PDBx file.
-        block_names: a list of names for the blocks (between two '#' lines) in a PDBx file that need to be read.
+        pdbx_file (str): file name for a PDBx file.
+        block_names (list|None): a list of names for the blocks in a PDBx file that need to be read.
 
     Returns:
         A dict of {block_name: pd.DataFrame of the info belongs to the block}
     """
     data = {}
+    if not block_names:
+        return data
     with open(pdbx_file, "r") as pf:
         line = pf.readline()  # title line
         _ = line.strip().split("_")[1]
