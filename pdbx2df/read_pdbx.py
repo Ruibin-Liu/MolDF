@@ -69,7 +69,7 @@ def read_pdbx(pdbx_file: str, block_names: list = None) -> dict:
                         raise ValueError(
                             f"{pdbx_file} not normally ended. Download it again?"
                         )
-                if block_name not in block_names:
+                if "all" not in block_names and block_name not in block_names:
                     continue
                 block_lines = block_lines.replace(
                     "\n", " "

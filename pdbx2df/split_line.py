@@ -13,6 +13,8 @@ def split_line(line: str, delimeter: str = " ") -> list:
     words = []
     # wihtout quotes, using shlex
     if '"' not in line and "'" not in line:
+        if delimeter == " ":
+            return line.split()
         return line.split(delimeter)
 
     # with quotes
