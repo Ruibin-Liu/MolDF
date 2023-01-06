@@ -1,7 +1,7 @@
 import os
 import sys
 
-import pandas as pd
+import pandas as pd  # type: ignore
 from pdbx2df.read_pdbx import read_pdbx
 
 sys.path.append("..")

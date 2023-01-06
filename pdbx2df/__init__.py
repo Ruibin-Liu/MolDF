@@ -9,4 +9,4 @@ from pdbx2df.split_line import split_line
 
 from .version import __version__
 
-__all__ = [read_pdbx, split_line, __version__]
+__all__ = ["read_pdbx", "split_line", __version__]
