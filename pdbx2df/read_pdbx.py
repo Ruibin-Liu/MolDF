@@ -39,7 +39,7 @@ def read_pdbx(pdbx_file: str, category_names: list = None) -> dict:
                 in_multiple_line = (
                     False  # lines quoted by ';', they need to be specially treated
                 )
-                while line[0] != "#":
+                while line != "#\n":
                     if line[0] == "_" and not in_multiple_line:
                         category_name, category_nth_col = (
                             line.strip().split(" ")[0].split(".")
