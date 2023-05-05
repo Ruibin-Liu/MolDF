@@ -1,6 +1,6 @@
 import sys
 
-import pytest
+import pytest  # type: ignore
 from pdbx2df.split_line import split_line
 
 sys.path.append("..")
