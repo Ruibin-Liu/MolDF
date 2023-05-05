@@ -14,8 +14,7 @@ def test_write_pdbx():
     Test write_pdbx function
     """
     file_path = [CFD, "test_files", "1VII.cif"]
-    pdbx = read_pdbx(file_path, category_names=['all'])
-    
+    pdbx = read_pdbx(file_path, category_names=["all"])
+
     write_to = [CFD, "test_files", "Test.cif"]
     write_pdbx(pdbx, file_name=write_to)
-
