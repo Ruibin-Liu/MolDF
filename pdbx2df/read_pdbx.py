@@ -19,6 +19,7 @@ def read_pdbx(pdbx_file: str, category_names: list = None) -> dict:
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
         return data
+    category_name = None
     with open(pdbx_file, "r") as pf:
         line = pf.readline()  # title line
         _ = line.strip().split("_")[1]
