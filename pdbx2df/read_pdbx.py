@@ -5,13 +5,13 @@ import pandas as pd  # type: ignore
 from .split_line import split_line
 
 
-def read_pdbx(pdbx_file: str, category_names: list = ["all"]) -> dict:
+def read_pdbx(pdbx_file: str, category_names: list) -> dict:
     """
     Read a pdbx file categories into Pandas DataFrame.
 
     Args:
         pdbx_file (str): file name for a PDBx file.
-        category_names (list|None): a list of names for the categories in a PDBx file that need to be read.
+        category_names (list): a list of names for the categories in a PDBx file that need to be read.
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
