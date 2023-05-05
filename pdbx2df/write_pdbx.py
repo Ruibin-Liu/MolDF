@@ -18,8 +18,8 @@ def write_pdbx(pdbx: dict[str, pd.DataFrame], file_name: str) -> None:
     # Validate
     if not (type(pdbx) is dict):
         raise TypeError(f"pdbx has to be a dict but {type(pdbx)} is providied.")
-    multi_record = defaultdict(bool)
-    max_tag_length = defaultdict(int)
+    multi_record: dict[str, int] = defaultdict(bool)
+    max_tag_length: dict[str, int] = defaultdict(int)
     for category_name, records in pdbx.items():
         if not (type(records) is pd.DataFrame):
             raise TypeError(

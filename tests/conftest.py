@@ -1,6 +1,6 @@
 import sys
 
-import pytest
+import pytest  # type: ignore
 
 sys.path.append("..")
 

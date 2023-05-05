@@ -5,7 +5,7 @@ import pandas as pd  # type: ignore
 from .split_line import split_line
 
 
-def read_pdbx(pdbx_file: str, category_names: list = None) -> dict:
+def read_pdbx(pdbx_file: str, category_names: list = ["all"]) -> dict:
     """
     Read a pdbx file categories into Pandas DataFrame.
 
