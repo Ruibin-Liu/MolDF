@@ -1,10 +1,10 @@
 # pdbx2df
 
-Parse a PDBx file (mmCIF file: pdb_id.cif) into a python dict with PDBx category names as keys and contents belonging to the category as the corresponding values. Each category content is parsed as a Pandas DataFrame whose columns are the attribute names.
+Parse a PDBx file (mmCIF file: pdb_id.cif) into a python dict with PDBx category names as keys and contents belonging to the category as the corresponding values. Each category content is parsed as a Pandas DataFrame whose columns are the attribute names. On the other hand, we can write a dict of Pandas DataFrame(s) into a PDBx format in which the dict key(s) are used as category names, the DataFrame column names as attribute names, and the DataFrame row(s) as the corresponding record(s).
 
 ## Requirements
 
-. Pandas (>=1.0)
+- Pandas (>=1.0)
 
 ## Install
 
@@ -56,4 +56,15 @@ pdbx = read_pdbx(pdbx_file, category_names=['all'])
 atoms_df = pdbx['_atom_site']
 fasta_df = pdbx['_entity_poly']
 # and more
+```
+
+5. Write back to a PDBx file:
+
+```python
+from pdbx2df import read_pdbx, write_pdbx
+pdbx_file = './1vii.cif'
+pdbx = read_pdbx(pdbx_file, category_names=['all'])
+keep = ['_atom_site', '_entity_poly']  # suppose we only want to keep the FASTA sequence and 3D coordinates.
+pdbx_keep = {k: v for k, v in pdbx.items() if k in keep}
+write_pdbx(pdbx_keep, '1vii_save.cif')
 ```
