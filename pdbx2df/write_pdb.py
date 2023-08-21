@@ -8,13 +8,13 @@ from .version import __version__ as pdbx2df_version
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
 
 
-def write_pdb(pdb: dict[str, pd.DataFrame], file_name: str | None = None) -> None:
+def write_pdb(pdb: dict[str, pd.DataFrame], file_name: str) -> None:
     """
     Write a dict of Pandas DataFrames into a PDB file.
 
     Args:
         pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str|None): file name to write the PDB file; if None, the file_name will be 'output.pdb'.
+        file_name (str): file name to write the PDB file.
 
     Returns:
         None
@@ -22,9 +22,6 @@ def write_pdb(pdb: dict[str, pd.DataFrame], file_name: str | None = None) -> Non
     # Validate
     if not (type(pdb) is dict):
         raise TypeError(f"pdb has to be a dict but {type(pdb)} is providied.")
-
-    if not file_name:
-        file_name = "output.pdb"
 
     implemented = ", ".join(IMPLEMENTED_PDB_CATS)
     for key in pdb.keys():
