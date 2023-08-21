@@ -1,6 +1,6 @@
 from datetime import date
 
-import numpy as np
+import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
 from .version import __version__ as pdbx2df_version
