@@ -18,20 +18,19 @@ def test_read_pdb():
 
     # Basic one category read
     pdb = read_pdb(test_file, category_names=["_atom_site"])
-    
+
     compare_to = [CFD, "test_files", "5K9I.csv"]
     compare_to = f"{os.sep}".join(compare_to)
     df_expected = pd.read_csv(compare_to)
     expected = {"_atom_site": df_expected}
     str_names = [
-            "atom_name",
-            "alt_loc",
-            "residue_name",
-            "chain_id",
-            "insertion",
-            "segment_id",
-            "element_symbol",
-        ]
+        "atom_name",
+        "alt_loc",
+        "residue_name",
+        "chain_id",
+        "insertion",
+        "segment_id",
+        "element_symbol",
+    ]
     df_expected[str_names] = df_expected[str_names].fillna("")
     pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
-

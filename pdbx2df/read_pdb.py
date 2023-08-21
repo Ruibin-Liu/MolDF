@@ -1,5 +1,5 @@
-import warnings
 import io
+import warnings
 from collections import defaultdict
 
 import pandas as pd  # type: ignore
