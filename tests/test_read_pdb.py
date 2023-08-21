@@ -18,7 +18,10 @@ def test_read_pdb():
 
     # Basic one category read
     pdb = read_pdb(test_file, category_names=["_atom_site"])
-    df_expected = pd.read_csv("test_files/5K9I.csv")
+    
+    compare_to = [CFD, "test_files", "5K9I.csv"]
+    compare_to = f"{os.sep}".join(compare_to)
+    df_expected = pd.read_csv(compare_to)
     expected = {"_atom_site": df_expected}
     str_names = [
             "atom_name",
