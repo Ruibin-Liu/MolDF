@@ -18,5 +18,17 @@ def test_read_pdb():
 
     # Basic one category read
     pdb = read_pdb(test_file, category_names=["_atom_site"])
-    expected = {"_atom_site": pd.read_pickle("test_files/5K9I.pkl")}
-    pd.testing.assert_frame_equal(pdb["_atom_site"], expected["_atom_site"])
+    df_expected = pd.read_csv("test_files/5K9I.csv")
+    expected = {"_atom_site": df_expected}
+    str_names = [
+            "atom_name",
+            "alt_loc",
+            "residue_name",
+            "chain_id",
+            "insertion",
+            "segment_id",
+            "element_symbol",
+        ]
+    df_expected[str_names] = df_expected[str_names].fillna("")
+    pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
+
