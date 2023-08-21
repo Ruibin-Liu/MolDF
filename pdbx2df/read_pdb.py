@@ -1,10 +1,7 @@
-import warnings
 import io
-from collections import defaultdict
+import warnings
 
 import pandas as pd  # type: ignore
-
-from .split_line import split_line
 
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
 ATOM_SITE = ["ATOM  ", "HETATM", "TER   "]
