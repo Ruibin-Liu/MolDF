@@ -36,6 +36,7 @@ def read_pdb(pdb_file: str, category_names: list) -> dict:
                 warnings.warn(
                     f"Line {line} has non-standard length {len(line) - 1}, not 80; skipped",
                     RuntimeWarning,
+                    stacklevel=2,
                 )
                 continue
             if "_atom_site" in category_names and line[0:6] in ATOM_SITE:
