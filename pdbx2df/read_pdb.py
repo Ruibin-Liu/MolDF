@@ -84,6 +84,6 @@ def read_pdb(pdb_file: str, category_names: list) -> dict:
         ]
         df_atom_site[str_names] = df_atom_site[str_names].fillna("")
 
-        data["_atom_site"] = df_atom_site[col_names]
+        data["_atom_site"] = df_atom_site
 
     return data
