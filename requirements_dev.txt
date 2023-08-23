@@ -1,3 +1,8 @@
-tox>=3.24
-pytest>=7.0
-pytest-cov>=3.0
+tox >= 3.24
+pytest >= 7.0
+pytest-cov >= 3.0
+black >= 23.7
+isort >= 5.12
+flake8 >= 6.1
+mypy >= 1.5
+pre-commit >= 3.3
