@@ -12,5 +12,5 @@ __all__ = [
     "read_pdb",
     "write_pdb",
     "split_line",
-    __version__,
+    "__version__",
 ]
