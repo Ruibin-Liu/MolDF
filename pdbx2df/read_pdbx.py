@@ -1,26 +1,28 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from typing import Union
 
 import pandas as pd  # type: ignore
 
 from .split_line import split_line
 
 
-def read_pdbx(pdbx_file: str, category_names: list) -> dict:
+def read_pdbx(pdbx_file: str, category_names: Union[list, None] = None) -> dict:
     """
     Read a pdbx file categories into Pandas DataFrame.
 
     Args:
         pdbx_file (str): file name for a PDBx file.
-        category_names (list): a list of names for the categories in a PDBx file that need to be read.
+        category_names (list|None): a list of names for the categories in a PDBx file that need to be read.
+            If None, "all" is used and all categories will be processed.
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
-        return data
+        category_names = ["all"]
     category_name = ""
     with open(pdbx_file, "r") as pf:
         line = pf.readline()  # title line

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import warnings
+from typing import Union
 
 import pandas as pd  # type: ignore
 
@@ -9,13 +10,14 @@ IMPLEMENTED_PDB_CATS = ["_atom_site"]
 ATOM_SITE = ["ATOM  ", "HETATM", "TER   "]
 
 
-def read_pdb(pdb_file: str, category_names: list) -> dict:
+def read_pdb(pdb_file: str, category_names: Union[list, None] = None) -> dict:
     """
     Read a pdb file categories into Pandas DataFrame.
 
     Args:
         pdb_file (str): file name for a PDB file.
-        category_names (list): a list of names for the categories in a PDB file that need to be read.
+        category_names (list|None): a list of names for the categories in a PDB file that need to be read.
+            If None, "_atom_site" is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:
             1. _atom_site: 'ATOM' and 'HETATM'
@@ -25,6 +27,8 @@ def read_pdb(pdb_file: str, category_names: list) -> dict:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """
     data: dict[str, pd.DataFrame] = {}
+    if not category_names:
+        category_names = ["_atom_site"]
     for category_name in category_names:
         if category_name not in IMPLEMENTED_PDB_CATS:
             implemented = ", ".join(IMPLEMENTED_PDB_CATS)
@@ -34,7 +38,13 @@ def read_pdb(pdb_file: str, category_names: list) -> dict:
     atom_site_lines = ""
     with open(pdb_file, "r") as pf:
         for line in pf:
-            if len(line) != 81:
+            if "_atom_site" in category_names and line[0:3] == "TER":
+                # This is for pdbfixer fixed PDB files whose TER lines are non standard.
+                # This condition section can be removed if the above problem is fixed in pdbfixer.
+                line = line.rstrip()
+                line_len = len(line)
+                line = line + " " * (80 - line_len) + "\n"
+            elif len(line) != 81:
                 warnings.warn(
                     f"Line {line} has non-standard length {len(line) - 1}, not 80; skipped",
                     RuntimeWarning,

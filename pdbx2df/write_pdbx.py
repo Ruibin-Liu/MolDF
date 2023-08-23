@@ -2,22 +2,28 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
+from typing import Union
 
 import pandas as pd  # type: ignore
 
 
-def write_pdbx(pdbx: dict[str, pd.DataFrame], file_name: str) -> None:
+def write_pdbx(
+    pdbx: dict[str, pd.DataFrame], file_name: Union[str, None] = None
+) -> None:
     """
     Write a dict of Pandas DataFrames into a PDBx file.
 
     Args:
         pdbx (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str): file name to write the PDBx file.
+        file_name (str|None): file name to write the PDBx file.
+            If None, "pdbx2df_output.cif" will be used as the file name.
 
     Returns:
         None
     """
-    # Validate
+    if not file_name:
+        file_name = "pdbx2df_output.cif"
+
     if not (type(pdbx) is dict):
         raise TypeError(f"pdbx has to be a dict but {type(pdbx)} is providied.")
     multi_record: dict[str, int] = defaultdict(bool)
