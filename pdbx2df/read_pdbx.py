@@ -14,7 +14,7 @@ def read_pdbx(pdbx_file: str | os.PathLike, category_names: list | None = None) 
 
     Args:
         pdbx_file (str|Pathlike): file name for a PDBx file.
-        category_names (list|None; defaults None): a list of names for the categories in a PDBx file that need to be read.
+        category_names (list|None; defaults None): a list of names for the categories in the mmCIF file format.
             If None, "all" is used and all categories will be processed.
 
     Returns:

@@ -16,7 +16,7 @@ def read_pdb(pdb_file: str | os.PathLike, category_names: list | None = None) ->
 
     Args:
         pdb_file (str|os.PathLike): file name for a PDB file.
-        category_names (list|None; defaults None): a list of names for the categories in a PDB file that need to be read.
+        category_names (list|None; defaults None): a list of names for the categories as to the mmCIF file format.
             If None, "_atom_site" is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:
