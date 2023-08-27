@@ -1,15 +1,20 @@
-def split_line(line: str, delimeter: str = " ") -> list:
+from __future__ import annotations
+
+
+def split_line(line: str, delimeter: str | None = None) -> list:
     """
     Split a string line into tokens separated by delimeters, assuming all ' and " in the start character
     or following a delimeter are paired to quote a token.
 
     Args:
         line (str): line as a string
-        delimeter (str|' '): delimeter to split the line
+        delimeter (str|None; defaults None): delimeter to split the line; if None, delimeter == ' '.
 
     Returns:
         A list of tokens: words
     """
+    if not delimeter:
+        delimeter = " "
     words = []
     # wihtout quotes, using shlex
     if '"' not in line and "'" not in line:

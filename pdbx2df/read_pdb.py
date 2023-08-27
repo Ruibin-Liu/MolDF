@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import io
+import os
 import warnings
-from typing import Union
 
 import pandas as pd  # type: ignore
 
@@ -10,13 +10,13 @@ IMPLEMENTED_PDB_CATS = ["_atom_site"]
 ATOM_SITE = ["ATOM  ", "HETATM", "TER   "]
 
 
-def read_pdb(pdb_file: str, category_names: Union[list, None] = None) -> dict:
+def read_pdb(pdb_file: str | os.PathLike, category_names: list | None = None) -> dict:
     """
     Read a pdb file categories into Pandas DataFrame.
 
     Args:
-        pdb_file (str): file name for a PDB file.
-        category_names (list|None): a list of names for the categories in a PDB file that need to be read.
+        pdb_file (str|os.PathLike): file name for a PDB file.
+        category_names (list|None; defaults None): a list of names for the categories in a PDB file that need to be read.
             If None, "_atom_site" is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:

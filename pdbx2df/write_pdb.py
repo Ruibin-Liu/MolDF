@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import os
 from datetime import date
-from typing import Union
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -11,13 +11,15 @@ from .version import __version__ as pdbx2df_version
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
 
 
-def write_pdb(pdb: dict[str, pd.DataFrame], file_name: Union[str, None] = None) -> None:
+def write_pdb(
+    pdb: dict[str, pd.DataFrame], file_name: str | os.PathLike | None = None
+) -> None:
     """
     Write a dict of Pandas DataFrames into a PDB file.
 
     Args:
         pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str|None): file name to write the PDB file.
+        file_name (str|os.PathLike|None; defaults None): file name to write a PDB file.
             If None, "pdbx2df_output.pdb" will be used as the file name.
 
     Returns:
@@ -26,7 +28,7 @@ def write_pdb(pdb: dict[str, pd.DataFrame], file_name: Union[str, None] = None) 
     if not file_name:
         file_name = "pdbx2df_output.pdb"
 
-    if not (type(pdb) is dict):
+    if not isinstance(pdb, dict):
         raise TypeError(f"pdb has to be a dict but {type(pdb)} is providied.")
 
     implemented = ", ".join(IMPLEMENTED_PDB_CATS)
