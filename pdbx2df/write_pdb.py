@@ -42,7 +42,7 @@ def write_pdb(
     with open(file_name, "w", encoding="utf-8") as out_file:
         today = date.today().strftime("%Y-%m-%d")
         padding = " "
-        tag = f"CREATED WITH PDBX2DF {pdbx2df_version} {today}"
+        tag = f"CREATED WITH PDBX2DF {pdbx2df_version} {today}  "
         header = f"REMARK   1{tag:>70}\n"
         out_file.write(header)
 
