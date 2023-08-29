@@ -8,11 +8,11 @@ def split_line(line: str, delimeter: str | None = None) -> list:
 
     Args:
         line (str): line as a string
-        delimeter (str|None; defaults None): delimeter to split the line; if None, delimeter == ' '.
+        delimeter (str|None; defaults to None): delimeter to split the line; if None, delimeter == ' '.
 
     Returns:
         A list of tokens: words
-    """
+    """ # noqa
     if not delimeter:
         delimeter = " "
     words = []

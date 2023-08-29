@@ -10,22 +10,23 @@ IMPLEMENTED_PDB_CATS = ["_atom_site"]
 ATOM_SITE = ["ATOM  ", "HETATM", "TER   "]
 
 
-def read_pdb(pdb_file: str | os.PathLike, category_names: list | None = None) -> dict:
+def read_pdb(pdb_file: str | os.PathLike, category_names: list | None = None, allow_chimera: bool = True) -> dict:
     """
     Read a pdb file categories into Pandas DataFrame.
 
     Args:
         pdb_file (str|os.PathLike): file name for a PDB file.
-        category_names (list|None; defaults None): a list of names for the categories as to the mmCIF file format.
+        category_names (list|None; defaults to None): a list of names for the categories as to the mmCIF file format.
             If None, "_atom_site" is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:
             1. _atom_site: 'ATOM' and 'HETATM'
             2. TBD
+        allow_chimera (bool; defaults to True): whether to allow Chimera-formatted PDB files.
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
-    """
+    """ # noqa
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
         category_names = ["_atom_site"]

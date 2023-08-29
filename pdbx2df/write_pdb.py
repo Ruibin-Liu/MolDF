@@ -19,12 +19,12 @@ def write_pdb(
 
     Args:
         pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str|os.PathLike|None; defaults None): file name to write a PDB file.
+        file_name (str|os.PathLike|None; defaults to None): file name to write a PDB file.
             If None, "pdbx2df_output.pdb" will be used as the file name.
 
     Returns:
         None
-    """
+    """ # noqa
     if not file_name:
         file_name = "pdbx2df_output.pdb"
 

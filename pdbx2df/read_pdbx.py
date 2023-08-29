@@ -14,12 +14,12 @@ def read_pdbx(pdbx_file: str | os.PathLike, category_names: list | None = None) 
 
     Args:
         pdbx_file (str|Pathlike): file name for a PDBx file.
-        category_names (list|None; defaults None): a list of names for the categories in the mmCIF file format.
+        category_names (list|None; defaults to None): a list of names for the categories in the mmCIF file format.
             If None, "all" is used and all categories will be processed.
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
-    """
+    """ # noqa
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
         category_names = ["all"]
