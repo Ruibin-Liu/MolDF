@@ -14,8 +14,7 @@ IMPLEMENTED_PDB_CATS = ["_atom_site"]
 def write_pdb(
     pdb: dict[str, pd.DataFrame], file_name: str | os.PathLike | None = None
 ) -> None:
-    """
-    Write a dict of Pandas DataFrames into a PDB file.
+    """Write a dict of Pandas DataFrames into a PDB file.
 
     Args:
         pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
@@ -36,8 +35,8 @@ def write_pdb(
         if key not in IMPLEMENTED_PDB_CATS:
             raise ValueError(f"Only {implemented} are implented for the PDB format.")
     if "_atom_site" in pdb.keys():
-        df = pdb["_atom_site"]
-        df.fillna("", inplace=True)
+        df_atom_site = pdb["_atom_site"]
+        df_atom_site.fillna("", inplace=True)
         col_names = [
             "record_name",
             "atom_number",
@@ -60,11 +59,12 @@ def write_pdb(
             "element_symbol",
             "charge",
         ]
-        df["blank_1"] = ""
-        df["blank_2"] = ""
-        df["blank_3"] = ""
-        df["blank_4"] = ""
-        df = df[col_names]
+        df_atom_site["blank_1"] = ""
+        df_atom_site["blank_2"] = ""
+        df_atom_site["blank_3"] = ""
+        df_atom_site["blank_4"] = ""
+        df_atom_site = df_atom_site[col_names]
+        df_atom_site = _format_atom_name(df_atom_site)
         formats = "%-6s%+5s%+1s%4s%+1s%+3s%+1s%+1s%+4s%+1s%-3s%+8s%+8s%+8s%+6s%+6s%+6s%-4s%+2s%+2s"
         today = date.today().strftime("%Y-%m-%d")
         header = "{:>6s} {:>3s} {:>1s} {:>1s} {:>9s} {:>49s}".format(
@@ -72,9 +72,46 @@ def write_pdb(
         )
         np.savetxt(
             file_name,
-            df.values,
+            df_atom_site.values,
             fmt=formats,
             header=header,
             comments="",
             footer="END" + " " * 77,
         )
+
+
+def _format_atom_name(df_atom_site: pd.DataFrame) -> pd.DataFrame:
+    """Internal function to format the atom_name column by the PDB 3.0 specification.
+
+    Args:
+        df_atom_site (pd.DataFrame): original PDB dataframe.
+
+    Returns:
+        pd.DataFrame: updated PDB dataframe
+    """
+    correct_atom_names = []
+    for _, row in df_atom_site.iterrows():
+        atom_name = row["atom_name"]
+        element_symbol = row["element_symbol"]
+        if len(element_symbol) == 2:
+            padded_spaces = " " * (4 - len(atom_name))
+            correct_atom_names.append(f"{atom_name}{padded_spaces}")
+        elif len(element_symbol) == 1:
+            if len(atom_name) < 4:
+                padded_spaces = " " * (3 - len(atom_name))
+                correct_atom_names.append(f" {atom_name}{padded_spaces}")
+            elif len(atom_name) == 4:
+                correct_atom_names.append(atom_name)
+            else:
+                raise ValueError(
+                    f"'atom_name' can have <= chars but {len(atom_name)} is given."
+                )
+        elif len(element_symbol) == 0:
+            correct_atom_names.append(" " * 4)
+        else:
+            raise ValueError(
+                f"'element_symbol' can either have 1 or 2 chars but {len(element_symbol)} is given."
+            )
+    df_atom_site["atom_name"] = correct_atom_names
+
+    return df_atom_site
