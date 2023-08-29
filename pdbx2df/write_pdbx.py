@@ -20,7 +20,7 @@ def write_pdbx(
 
     Returns:
         None
-    """ # noqa
+    """  # noqa
     if not file_name:
         file_name = "pdbx2df_output.cif"
 

@@ -19,7 +19,7 @@ def read_pdbx(pdbx_file: str | os.PathLike, category_names: list | None = None) 
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
-    """ # noqa
+    """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
         category_names = ["all"]

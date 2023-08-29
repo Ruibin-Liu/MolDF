@@ -12,7 +12,7 @@ def split_line(line: str, delimeter: str | None = None) -> list:
 
     Returns:
         A list of tokens: words
-    """ # noqa
+    """  # noqa
     if not delimeter:
         delimeter = " "
     words = []
