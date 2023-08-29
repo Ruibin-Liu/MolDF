@@ -12,7 +12,8 @@ IMPLEMENTED_PDB_CATS = ["_atom_site"]
 
 
 def write_pdb(
-    pdb: dict[str, pd.DataFrame], file_name: str | os.PathLike | None = None
+    pdb: dict[str, pd.DataFrame],
+    file_name: str | os.PathLike | None = None,
 ) -> None:
     """Write a dict of Pandas DataFrames into a PDB file.
 
@@ -76,7 +77,6 @@ def write_pdb(
             fmt=formats,
             header=header,
             comments="",
-            footer="END" + " " * 77,
         )
 
 
