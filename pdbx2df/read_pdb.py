@@ -181,7 +181,6 @@ def _fix_chimera(df_atom_site: pd.DataFrame) -> pd.DataFrame:
     ]
     df_atom_site["record_name"] = record_names
 
-    print("TEST1", df_atom_site["atom_number"].dtypes)
     if df_atom_site["atom_number"].dtypes != "int64":
         original_atom_numbers = list(df_atom_site.atom_number)
         atom_numbers = [
