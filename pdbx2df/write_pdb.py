@@ -23,7 +23,7 @@ def write_pdb(
         pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
         file_name (str|os.PathLike|None; defaults to None): file name to write a PDB file.
             If None, "pdbx2df_output.pdb" will be used as the file name.
-        allow_chimera (bool; defaults to True): whether to allow writing to Chimera-formatted PDB files.
+        allow_chimera (bool; defaults to False): whether to allow writing to Chimera-formatted PDB files.
 
     Returns:
         None
@@ -37,7 +37,7 @@ def write_pdb(
     implemented = ", ".join(IMPLEMENTED_PDB_CATS)
     for key in pdb.keys():
         if key not in IMPLEMENTED_PDB_CATS:
-            raise ValueError(f"Only {implemented} are implented for the PDB format.")
+            raise ValueError(f"Only {implemented} are implemented for the PDB format.")
 
     with open(file_name, "w", encoding="utf-8") as out_file:
         today = date.today().strftime("%Y-%m-%d")
