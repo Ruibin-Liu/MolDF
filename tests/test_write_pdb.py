@@ -23,9 +23,14 @@ def test_write_pdb():
     write_to = f"{os.sep}".join(write_to)
 
     write_pdb(pdb, file_name=write_to)
-    with open(compare_to, "r") as cf, open(write_to, "r") as wf:
+    with open(compare_to, "r", encoding="utf-8") as cf, open(
+        write_to,
+        "r",
+        encoding="utf-8",
+    ) as wf:
         next(cf)
         next(wf)
         cf_lines = cf.readlines()
         wf_lines = wf.readlines()
         assert cf_lines == wf_lines
+    os.remove(write_to)

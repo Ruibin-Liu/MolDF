@@ -25,3 +25,4 @@ def test_write_pdbx():
 
     write_pdbx(pdbx, file_name=write_to)
     assert filecmp.cmp(compare_to, write_to)
+    os.remove(write_to)
