@@ -14,6 +14,7 @@ def read_pdb(
     pdb_file: str | os.PathLike,
     category_names: list | None = None,
     allow_chimera: bool = True,
+    need_ter_lines: bool = True,
 ) -> dict:
     """
     Read a pdb file categories into Pandas DataFrame.
@@ -27,17 +28,18 @@ def read_pdb(
             1. _atom_site: 'ATOM', 'HETATM', and 'TER' lines
             2. TBD
         allow_chimera (bool; defaults to True): whether to allow Chimera-formatted PDB files.
+        need_ter_lines (bool; defaults to True): whether to read the TER lines into the DataFrame.
 
     Returns:
         A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
-    if not category_names:
+    if category_names is None:
         category_names = ["_atom_site"]
     for category_name in category_names:
         if category_name not in IMPLEMENTED_PDB_CATS:
             implemented = ", ".join(IMPLEMENTED_PDB_CATS)
-            raise ValueError(f"Only {implemented} are implented for the PDB format.")
+            raise ValueError(f"Only {implemented} are implemented for the PDB format.")
         data[category_name] = pd.DataFrame()
 
     num_nmr_models = 0
@@ -46,23 +48,41 @@ def read_pdb(
     n_endmdl_lines = 0
     atom_site_rows = []
 
+    if not need_ter_lines:
+        all_reads = ("ATOM", "HETATM") + NMR_MDL
+    else:
+        all_reads = ATOM_SITE + NMR_MDL  # type: ignore
+
     with open(pdb_file, "r", encoding="utf-8") as pf:
         for line in pf:
-            if line.startswith(NMR_MDL):
-                if line.startswith("NUMMDL"):
-                    num_nmr_models = int(line[6:].strip())
+            if line.startswith(all_reads):
+                if line.startswith(("ATOM", "HETATM")):
+                    atom_site_rows.append(
+                        _split_atom_line(
+                            line,
+                            nmr_model=nmr_model,
+                            allow_chimera=allow_chimera,
+                            is_ter_line=False,
+                        )
+                    )
+                elif need_ter_lines and line.startswith("TER"):
+                    atom_site_rows.append(
+                        _split_atom_line(
+                            line,
+                            nmr_model=nmr_model,
+                            allow_chimera=allow_chimera,
+                            is_ter_line=True,
+                        )
+                    )
                 elif line.startswith("MODEL"):
                     n_model_lines += 1
                     nmr_model = int(line[6:].strip())
                 elif line.startswith("ENDMDL"):
                     n_endmdl_lines += 1
-            elif line.startswith(ATOM_SITE):
-                atom_site_rows.append(
-                    _split_atom_line(
-                        line, nmr_model=nmr_model, allow_chimera=allow_chimera
-                    )
-                )
-    if num_nmr_models != n_model_lines or num_nmr_models != n_endmdl_lines:
+                else:  # line.startswith("NUMMDL")
+                    num_nmr_models = int(line[6:].strip())
+
+    if num_nmr_models != n_model_lines:
         warnings.warn(
             f"The NUMMDL says {num_nmr_models} NMR models, but only {n_model_lines} found.",
             RuntimeWarning,
@@ -88,21 +108,25 @@ def read_pdb(
         "nmr_model",
     ]
     data["_atom_site"] = pd.DataFrame(atom_site_rows, columns=column_names)
-    if n_model_lines == 0:
+    if not n_model_lines:
         data["_atom_site"].drop(columns=["nmr_model"], inplace=True)
 
     return data
 
 
 def _split_atom_line(
-    line: str, nmr_model: int | None = None, allow_chimera: bool = True
+    line: str,
+    nmr_model: int | None = None,
+    allow_chimera: bool = True,
+    is_ter_line: bool = False,
 ) -> tuple:
-    """Internal function to parse a single line belonging to 'ATOM', 'HETATM', and 'TER' lines
+    """Internal function to parse a single line belonging to 'ATOM', 'HETATM', or 'TER' lines
 
     Args:
-        line (str): A 'ATOM', 'HETATM', and 'TER' line
-        nmr_model (int|None; defaults to None): the NMR model number for the line
+        line (str): A 'ATOM', 'HETATM', or 'TER' line.
+        nmr_model (int|None; defaults to None): the NMR model number for the line.
         allow_chimera (bool; defaults to True): try to parse as a Chimera-formatted PDB file.
+        is_ter_line (bool; defaults to False): whether the line starts with 'TER'.
 
     Returns:
         tuple: parsed values
@@ -113,17 +137,30 @@ def _split_atom_line(
     residue_number = int(line[22:26].lstrip())
     insertion = line[26].strip()
 
-    x_coord_s = line[30:38].lstrip()
-    x_coord = float(x_coord_s) if x_coord_s else None
-    y_coord_s = line[38:46].lstrip()
-    y_coord = float(y_coord_s) if y_coord_s else None
-    z_coord_s = line[46:54].lstrip()
-    z_coord = float(z_coord_s) if z_coord_s else None
+    x_coord: float | None = 0
+    y_coord: float | None = 0
+    z_coord: float | None = 0
+    occupancy: float | None = 0
+    b_factor: float | None = 0
 
-    occupancy_s = line[54:60].lstrip()
-    occupancy = float(occupancy_s) if occupancy_s else None
-    b_factor_s = line[60:66].lstrip()
-    b_factor = float(b_factor_s) if b_factor_s else None
+    if not is_ter_line:
+        x_coord = float(line[30:38].lstrip())
+        y_coord = float(line[38:46].lstrip())
+        z_coord = float(line[46:54].lstrip())
+        occupancy = float(line[54:60].lstrip())
+        b_factor = float(line[60:66].lstrip())
+    else:
+        x_coord_s = line[30:38].lstrip()
+        x_coord = float(x_coord_s) if x_coord_s else None
+        y_coord_s = line[38:46].lstrip()
+        y_coord = float(y_coord_s) if y_coord_s else None
+        z_coord_s = line[46:54].lstrip()
+        z_coord = float(z_coord_s) if z_coord_s else None
+
+        occupancy_s = line[54:60].lstrip()
+        occupancy = float(occupancy_s) if occupancy_s else None
+        b_factor_s = line[60:66].lstrip()
+        b_factor = float(b_factor_s) if b_factor_s else None
 
     segment_id = line[72:76].rstrip()
     element_symbol = line[76:78].lstrip()
