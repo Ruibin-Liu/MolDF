@@ -30,6 +30,7 @@ def test_read_pdb():
         "insertion",
         "segment_id",
         "element_symbol",
+        "charge",
     ]
     df_expected[str_names] = df_expected[str_names].fillna("")
     pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
@@ -50,6 +51,7 @@ def test_read_pdb():
         "insertion",
         "segment_id",
         "element_symbol",
+        "charge",
     ]
     df_expected[str_names] = df_expected[str_names].fillna("")
     pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
