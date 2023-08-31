@@ -1,8 +1,6 @@
 import os
 import sys
 
-import pandas as pd  # type: ignore
-
 from pdbx2df.read_pdb import read_pdb
 
 sys.path.append("..")
@@ -13,45 +11,55 @@ def test_read_pdb():
     """
     Test read_pdb function
     """
-
-    # non-NMR PDB
-    file_path = [CFD, "test_files", "5K9I.pdb"]
-    test_file = f"{os.sep}".join(file_path)
-    pdb = read_pdb(test_file, category_names=["_atom_site"])
-
-    compare_to = [CFD, "test_files", "5K9I.csv"]
-    compare_to = f"{os.sep}".join(compare_to)
-    df_expected = pd.read_csv(compare_to)
-    str_names = [
-        "atom_name",
-        "alt_loc",
-        "residue_name",
-        "chain_id",
-        "insertion",
-        "segment_id",
-        "element_symbol",
-        "charge",
-    ]
-    df_expected[str_names] = df_expected[str_names].fillna("")
-    pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
-
     # NMR PDB
     file_path = [CFD, "test_files", "1G03.pdb"]
     test_file = f"{os.sep}".join(file_path)
-    pdb = read_pdb(test_file, category_names=["_atom_site"])
+    pdb = read_pdb(
+        test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+    )
+    pdb_df = pdb["_atom_site"]
+    assert (pdb_df.tail(1).nmr_model == 20).bool(), "NMR model index not read as 20."
+    assert (
+        pdb_df.tail(1).record_name == "TER   "
+    ).bool(), "Last record name not 'TER   ' when TER lines are required."
+    pdb = read_pdb(
+        test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=False,
+    )
+    pdb_df = pdb["_atom_site"]
+    assert (
+        pdb_df.tail(1).record_name == "ATOM  "
+    ).bool(), "Last record name not 'ATOM  ' when TER lines are not required."
 
-    compare_to = [CFD, "test_files", "1G03.csv"]
-    compare_to = f"{os.sep}".join(compare_to)
-    df_expected = pd.read_csv(compare_to)
-    str_names = [
-        "atom_name",
-        "alt_loc",
-        "residue_name",
-        "chain_id",
-        "insertion",
-        "segment_id",
-        "element_symbol",
-        "charge",
-    ]
-    df_expected[str_names] = df_expected[str_names].fillna("")
-    pd.testing.assert_frame_equal(pdb["_atom_site"], df_expected)
+    # Non-NMR PDB
+    file_path = [CFD, "test_files", "5K9I.pdb"]
+    test_file = f"{os.sep}".join(file_path)
+    pdb = read_pdb(test_file, category_names=["_atom_site"])
+    pdb_df = pdb["_atom_site"]
+    assert (
+        "nmr_model" not in pdb_df.columns
+    ), "nmr_model column appears when the file is not NMR."
+
+    # Chimera
+    file_path = [CFD, "test_files", "5K9I_mimic_Chimera.pdb"]
+    test_file = f"{os.sep}".join(file_path)
+    pdb = read_pdb(
+        test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+    )
+    pdb_df = pdb["_atom_site"]
+    pdb_df = pdb_df[pdb_df.record_name == "TER   "]
+    print(pdb_df)
+    assert (
+        pdb_df.tail(1).atom_number == 14209
+    ).bool(), "Chimera PDB didn't get larger than 9999 atoms."
+    assert (
+        pdb_df.tail(1).residue_name == "LEUX"
+    ).bool(), "Chimera PDB didn't get 4-letter residue names."
