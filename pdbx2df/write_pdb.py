@@ -136,6 +136,7 @@ def write_pdb(
                     )
                     atom_site_line += f"{b_factor:6.2f}      {segment_id:<4s}{element_symbol:>2s}{charge:>2s}\n"
                 if len(atom_site_line) != 81:
+                    print({i + 1: c for i, c in enumerate(atom_site_line)})
                     raise ValueError(
                         f"Atom site line length is {len(atom_site_line) -1 } not 80."
                     )

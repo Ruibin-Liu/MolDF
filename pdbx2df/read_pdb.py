@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import warnings
 
+import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
@@ -44,43 +45,71 @@ def read_pdb(
 
     num_nmr_models = 0
     n_model_lines = 0
-    nmr_model = None
+    nmr_model = -1  # -1 means there is no NMR model
     n_endmdl_lines = 0
-    atom_site_rows = []
+    # atom_site_rows = []
+    column_name_types = [
+        ("record_name", "U6"),
+        ("atom_number", "i4"),
+        ("atom_name", "U4"),
+        ("alt_loc", "U1"),
+        ("residue_name", "U4"),
+        ("chain_id", "U1"),
+        ("residue_number", "i2"),
+        ("insertion", "U1"),
+        ("x_coord", "f4"),
+        ("y_coord", "f4"),
+        ("z_coord", "f4"),
+        ("occupancy", "f4"),
+        ("b_factor", "f4"),
+        ("segment_id", "U4"),
+        ("element_symbol", "U2"),
+        ("charge", "U2"),
+        ("nmr_model", "i2"),
+    ]
 
     if not need_ter_lines:
         all_reads = ("ATOM", "HETATM") + NMR_MDL
     else:
         all_reads = ATOM_SITE + NMR_MDL  # type: ignore
 
+    file_stat = os.stat(pdb_file)
+    total_lines = int(file_stat.st_size / 81)
+    # array = np.zeros(total_lines, column_name_types)
+    n_record = 0
+    n_lines = 0
     with open(pdb_file, "r", encoding="utf-8") as pf:
         for line in pf:
             if line.startswith(all_reads):
+                if (not n_record) and line.startswith(("ATOM", "MODEL")):
+                    array = np.zeros(total_lines - n_lines, column_name_types)
                 if line.startswith(("ATOM", "HETATM")):
-                    atom_site_rows.append(
-                        _split_atom_line(
-                            line,
-                            nmr_model=nmr_model,
-                            allow_chimera=allow_chimera,
-                            is_ter_line=False,
-                        )
+                    array[n_record] = _split_atom_line(
+                        line,
+                        nmr_model=nmr_model,
+                        allow_chimera=allow_chimera,
+                        is_ter_line=False,
                     )
+                    n_record += 1
                 elif need_ter_lines and line.startswith("TER"):
-                    atom_site_rows.append(
-                        _split_atom_line(
-                            line,
-                            nmr_model=nmr_model,
-                            allow_chimera=allow_chimera,
-                            is_ter_line=True,
-                        )
+                    array[n_record] = _split_atom_line(
+                        line,
+                        nmr_model=nmr_model,
+                        allow_chimera=allow_chimera,
+                        is_ter_line=True,
                     )
+                    n_record += 1
                 elif line.startswith("MODEL"):
                     n_model_lines += 1
                     nmr_model = int(line[6:].strip())
                 elif line.startswith("ENDMDL"):
                     n_endmdl_lines += 1
+                    if num_nmr_models and n_endmdl_lines == num_nmr_models:
+                        break
                 else:  # line.startswith("NUMMDL")
                     num_nmr_models = int(line[6:].strip())
+            if not n_record:
+                n_lines += 1
 
     if num_nmr_models != n_model_lines:
         warnings.warn(
@@ -88,26 +117,10 @@ def read_pdb(
             RuntimeWarning,
             stacklevel=2,
         )
-    column_names = [
-        "record_name",
-        "atom_number",
-        "atom_name",
-        "alt_loc",
-        "residue_name",
-        "chain_id",
-        "residue_number",
-        "insertion",
-        "x_coord",
-        "y_coord",
-        "z_coord",
-        "occupancy",
-        "b_factor",
-        "segment_id",
-        "element_symbol",
-        "charge",
-        "nmr_model",
-    ]
-    data["_atom_site"] = pd.DataFrame(atom_site_rows, columns=column_names)
+
+    df = pd.DataFrame.from_records(array[:n_record])
+    data["_atom_site"] = df
+
     if not n_model_lines:
         data["_atom_site"].drop(columns=["nmr_model"], inplace=True)
 
@@ -116,7 +129,7 @@ def read_pdb(
 
 def _split_atom_line(
     line: str,
-    nmr_model: int | None = None,
+    nmr_model: int = -1,
     allow_chimera: bool = True,
     is_ter_line: bool = False,
 ) -> tuple:
@@ -124,75 +137,82 @@ def _split_atom_line(
 
     Args:
         line (str): A 'ATOM', 'HETATM', or 'TER' line.
-        nmr_model (int|None; defaults to None): the NMR model number for the line.
+        nmr_model (int; defaults to -1): the NMR model number for the line; default -1 means not an NMR model
         allow_chimera (bool; defaults to True): try to parse as a Chimera-formatted PDB file.
         is_ter_line (bool; defaults to False): whether the line starts with 'TER'.
 
     Returns:
         tuple: parsed values
     """
-    atom_name = line[12:16].strip()
-    alt_loc = line[16].strip()
-    chain_id = line[21]
-    residue_number = int(line[22:26].lstrip())
-    insertion = line[26].strip()
-
-    x_coord: float | None = 0
-    y_coord: float | None = 0
-    z_coord: float | None = 0
-    occupancy: float | None = 0
-    b_factor: float | None = 0
-
-    if not is_ter_line:
-        x_coord = float(line[30:38].lstrip())
-        y_coord = float(line[38:46].lstrip())
-        z_coord = float(line[46:54].lstrip())
-        occupancy = float(line[54:60].lstrip())
-        b_factor = float(line[60:66].lstrip())
+    if not (is_ter_line or allow_chimera):
+        return (
+            line[0:6],
+            line[6:11],
+            line[12:16],
+            line[16],
+            line[17:20],
+            line[21],
+            line[22:26],
+            line[26],
+            line[30:38],
+            line[38:46],
+            line[46:54],
+            line[54:60],
+            line[60:66],
+            line[72:76],
+            line[76:78],
+            line[78:80],
+            nmr_model,
+        )
+    elif is_ter_line:
+        if allow_chimera:
+            record_name = line[0:5] + " "
+            residue_name = line[17:21]
+        else:
+            record_name = line[0:6]
+            residue_name = line[17:20]
+        return (
+            record_name,
+            line[6:11],
+            line[12:16],
+            line[16],
+            residue_name,
+            line[21],
+            line[22:26],
+            line[26],
+            None,
+            None,
+            None,
+            None,
+            None,
+            line[72:76],
+            line[76:78],
+            line[78:80],
+            nmr_model,
+        )
     else:
-        x_coord_s = line[30:38].lstrip()
-        x_coord = float(x_coord_s) if x_coord_s else None
-        y_coord_s = line[38:46].lstrip()
-        y_coord = float(y_coord_s) if y_coord_s else None
-        z_coord_s = line[46:54].lstrip()
-        z_coord = float(z_coord_s) if z_coord_s else None
-
-        occupancy_s = line[54:60].lstrip()
-        occupancy = float(occupancy_s) if occupancy_s else None
-        b_factor_s = line[60:66].lstrip()
-        b_factor = float(b_factor_s) if b_factor_s else None
-
-    segment_id = line[72:76].rstrip()
-    element_symbol = line[76:78].lstrip()
-    charge = line[78:80].strip()
-
-    if allow_chimera:
-        record_name = line[0:5].rstrip()
-        if record_name == "HETAT":
+        if line[0:5] == "HETAT":
             record_name = "HETATM"
-        atom_number = int(line[5:11].lstrip("M").lstrip(" "))
-        residue_name = line[17:21].strip()
-    else:
-        record_name = line[0:6].rstrip()
-        atom_number = int(line[6:11].lstrip())
-        residue_name = line[17:20].strip()
-
-    return (
-        record_name,
-        atom_number,
-        atom_name,
-        alt_loc,
-        residue_name,
-        chain_id,
-        residue_number,
-        insertion,
-        x_coord,
-        y_coord,
-        z_coord,
-        occupancy,
-        b_factor,
-        segment_id,
-        element_symbol,
-        charge,
-        nmr_model,
-    )
+            atom_number = line[6:11]
+        else:
+            record_name = line[0:5] + " "
+            atom_number = line[5:11]
+        return (
+            record_name,
+            atom_number,
+            line[12:16],
+            line[16],
+            line[17:21],
+            line[21],
+            line[22:26],
+            line[26],
+            line[30:38],
+            line[38:46],
+            line[46:54],
+            line[54:60],
+            line[60:66],
+            line[72:76],
+            line[76:78],
+            line[78:80],
+            nmr_model,
+        )
