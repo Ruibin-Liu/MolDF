@@ -1,6 +1,8 @@
 import os
 import sys
+
 import pytest
+
 from pdbx2df.read_mol2 import read_mol2
 
 sys.path.append("..")
