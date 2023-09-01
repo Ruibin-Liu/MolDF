@@ -32,9 +32,9 @@ BOND_COL_NAMES = (
 def read_mol2(
     mol2_file: str | os.PathLike,
     category_names: list | None = None,
-) -> dict:
+) -> dict[str, pd.DataFrame]:
     """
-    Read a mol2 file categories into Pandas DataFrame.
+    Read a mol2 file's categories into a dict of Pandas DataFrames.
 
     Args:
         mol2_file (str|os.PathLike): file name for a PDB file.
@@ -42,7 +42,7 @@ def read_mol2(
             If None, ["ATOM", "MOLECULE", "BOND"] is used.
 
     Returns:
-        A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if category_names is None:

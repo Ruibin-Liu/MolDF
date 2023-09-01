@@ -16,9 +16,9 @@ def read_pdb(
     category_names: list | None = None,
     allow_chimera: bool = True,
     need_ter_lines: bool = True,
-) -> dict:
+) -> dict[str, pd.DataFrame]:
     """
-    Read a pdb file categories into Pandas DataFrame.
+    Read a pdb file's categories into a dict of Pandas DataFrames.
 
     Args:
         pdb_file (str|os.PathLike): file name for a PDB file.
@@ -32,7 +32,7 @@ def read_pdb(
         need_ter_lines (bool; defaults to True): whether to read the TER lines into the DataFrame.
 
     Returns:
-        A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if category_names is None:

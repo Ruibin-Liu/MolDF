@@ -8,9 +8,11 @@ import pandas as pd  # type: ignore
 from .split_line import split_line
 
 
-def read_pdbx(pdbx_file: str | os.PathLike, category_names: list | None = None) -> dict:
+def read_pdbx(
+    pdbx_file: str | os.PathLike, category_names: list | None = None
+) -> dict[str, pd.DataFrame]:
     """
-    Read a pdbx file categories into Pandas DataFrame.
+    Read a pdbx file's categories into a dict of Pandas DataFrames.
 
     Args:
         pdbx_file (str|Pathlike): file name for a PDBx file.
@@ -18,7 +20,7 @@ def read_pdbx(pdbx_file: str | os.PathLike, category_names: list | None = None) 
             If None, "all" is used and all categories will be processed.
 
     Returns:
-        A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if not category_names:
