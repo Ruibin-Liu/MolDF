@@ -1,3 +1,4 @@
+from pdbx2df.read_mol2 import read_mol2
 from pdbx2df.read_pdb import read_pdb
 from pdbx2df.read_pdbx import read_pdbx
 from pdbx2df.split_line import split_line
@@ -11,6 +12,7 @@ __all__ = [
     "write_pdbx",
     "read_pdb",
     "write_pdb",
+    "read_mol2",
     "split_line",
     "__version__",
 ]
