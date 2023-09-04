@@ -15,7 +15,7 @@ def test_write_pdbx():
     """
     test_file = [CFD, "test_files", "1VII.cif"]
     test_file = f"{os.sep}".join(test_file)
-    pdbx = read_pdbx(test_file, category_names=["all"])
+    pdbx = read_pdbx(pdbx_file=test_file, category_names=["all"])
 
     compare_to = [CFD, "test_files", "1VII_pdbx2df.cif"]
     compare_to = f"{os.sep}".join(compare_to)

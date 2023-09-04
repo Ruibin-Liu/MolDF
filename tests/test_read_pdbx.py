@@ -17,12 +17,12 @@ def test_read_pdbx():
     test_file = f"{os.sep}".join(file_path)
 
     # Basic one category read
-    pdbx = read_pdbx(test_file, category_names=["_entry"])
+    pdbx = read_pdbx(pdbx_file=test_file, category_names=["_entry"])
     expected = {"_entry": pd.DataFrame({"id": ["1VII"]})}
     pd.testing.assert_frame_equal(pdbx["_entry"], expected["_entry"])
 
     # Multiple categories read
-    pdbx = read_pdbx(test_file, category_names=["_entry", "_entity_name_com"])
+    pdbx = read_pdbx(pdbx_file=test_file, category_names=["_entry", "_entity_name_com"])
     expected = {
         "_entry": pd.DataFrame({"id": ["1VII"]}),
         "_entity_name_com": pd.DataFrame(
@@ -35,7 +35,7 @@ def test_read_pdbx():
     )
 
     # category with ';'
-    pdbx = read_pdbx(test_file, category_names=["_pdbx_nmr_refine"])
+    pdbx = read_pdbx(pdbx_file=test_file, category_names=["_pdbx_nmr_refine"])
     expected = {
         "_pdbx_nmr_refine": pd.DataFrame(
             {
@@ -51,3 +51,33 @@ def test_read_pdbx():
     pd.testing.assert_frame_equal(
         pdbx["_pdbx_nmr_refine"], expected["_pdbx_nmr_refine"]
     )
+
+    # From PDB ID
+    pdb_id = "1VIi"
+    pdbx = read_pdbx(
+        pdb_id=pdb_id,
+        category_names=["_atom_site"],
+        save_pdbx_file=True,
+    )
+    pdb_df = pdbx["_atom_site"]
+    assert os.path.exists(
+        f"./PDBx_files/{pdb_id.upper()}.cif"
+    ), "File not saved to PDBx_files if pdbx_file_dir not provided."
+    assert (
+        pdb_df.head(1).label_comp_id == "MET"
+    ).bool(), "First 1VII residue is not MET."
+
+    # From Uniprot ID
+    uniprot_id = "P01116"
+    pdbx = read_pdbx(
+        pdb_id=uniprot_id,
+        category_names=["_atom_site"],
+        save_pdbx_file=True,
+    )
+    pdb_df = pdbx["_atom_site"]
+    assert os.path.exists(
+        f"./PDBx_files/{uniprot_id.upper()}.cif"
+    ), "File not saved to PDBx_files if pdbx_file_dir not provided."
+    assert (
+        pdb_df.head(1).label_seq_id == 1
+    ).bool(), "First P01116 residue number is not 1."

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import io
 import os
+import urllib.request
 import warnings
+from pathlib import Path
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -9,11 +12,15 @@ import pandas as pd  # type: ignore
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
 ATOM_SITE = ("ATOM", "HETATM", "TER")
 NMR_MDL = ("NUMMDL", "MODEL", "ENDMDL")
+AF2_MODEL = 4
 
 
 def read_pdb(
-    pdb_file: str | os.PathLike,
+    pdb_file: str | os.PathLike[str] | None = None,
+    pdb_id: str | None = None,
     category_names: list | None = None,
+    save_pdb_file: bool = True,
+    pdb_file_dir: str | os.PathLike | None = None,
     allow_chimera: bool = True,
     need_ter_lines: bool = True,
 ) -> dict[str, pd.DataFrame]:
@@ -21,13 +28,16 @@ def read_pdb(
     Read a pdb file's categories into a dict of Pandas DataFrames.
 
     Args:
-        pdb_file (str|os.PathLike): file name for a PDB file.
+        pdb_id (str|None; defaults to None): PDB/Uniprot ID. Required if pdb_file is None.
+        pdb_file (str|os.PathLike[str]|None; defaults to None): file name for a PDB file. Used over pdb_id.
         category_names (list|None; defaults to None): a list of names for the categories as to the mmCIF file format.
             If None, "_atom_site" is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:
             1. _atom_site: 'ATOM', 'HETATM', and 'TER' lines
             2. TBD
+        save_pdb_file(bool; defaults to True): whether to save the fetched PDB file to pdb_file_dir.
+        pdb_file_dir(str|os.PathLike|None; defaults to None): directory to save fetched PDB files.
         allow_chimera (bool; defaults to True): whether to allow Chimera-formatted PDB files.
         need_ter_lines (bool; defaults to True): whether to read the TER lines into the DataFrame.
 
@@ -35,6 +45,37 @@ def read_pdb(
         dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
+    if pdb_id is None and pdb_file is None:
+        raise ValueError("At least one of pdb_id and pdb_file has to be given.")
+    elif pdb_file is None:
+        pdb_id = str(pdb_id).upper()
+        if len(pdb_id) == 4:
+            pdb_file_url = f"https://files.rcsb.org/view/{pdb_id.upper()}.pdb"
+        else:
+            pdb_file_url = f"https://alphafold.ebi.ac.uk/files/AF-{pdb_id.upper()}-F1-model_v{AF2_MODEL}.pdb"
+        try:
+            with urllib.request.urlopen(pdb_file_url) as response:
+                raw_data = response.read()
+            text = raw_data.decode("utf-8")
+            pdb_file_handle: io.TextIOWrapper | io.StringIO = io.StringIO(text)
+            if save_pdb_file:
+                if pdb_file_dir is None:
+                    pdb_file_dir = "./PDB_files"
+                pdb_file_dir = Path(pdb_file_dir)
+                if not pdb_file_dir.exists():
+                    pdb_file_dir.mkdir(parents=True, exist_ok=True)
+                file_path = Path(pdb_file_dir, f"{pdb_id}.pdb")
+                with open(file_path, "w", encoding="utf-8") as p_file:
+                    p_file.write(text)
+        except urllib.error.HTTPError as http_error:
+            raise ValueError(
+                f"Cannot download PDB file from url {pdb_file_url}."
+            ) from http_error
+    else:
+        pdb_file = Path(pdb_file)
+        if not pdb_file.exists():
+            raise FileNotFoundError(f"File {pdb_file} not found.")
+        pdb_file_handle = open(pdb_file, "r", encoding="utf-8")
     if category_names is None:
         category_names = ["_atom_site"]
     for category_name in category_names:
@@ -73,13 +114,17 @@ def read_pdb(
     else:
         all_reads = ATOM_SITE + NMR_MDL  # type: ignore
 
-    file_stat = os.stat(pdb_file)
-    total_lines = int(file_stat.st_size / 81)
+    if pdb_file is not None:  # This check is just for mypy
+        file_stat = os.stat(pdb_file)
+        total_lines = int(file_stat.st_size / 81)
+    else:
+        total_lines = 100000
     # array = np.zeros(total_lines, column_name_types)
     n_record = 0
     n_lines = 0
-    with open(pdb_file, "r", encoding="utf-8") as pf:
-        for line in pf:
+    with pdb_file_handle:
+        line = pdb_file_handle.readline()
+        for line in pdb_file_handle:
             if line.startswith(all_reads):
                 if (not n_record) and line.startswith(("ATOM", "MODEL")):
                     array = np.zeros(total_lines - n_lines, column_name_types)
@@ -111,9 +156,9 @@ def read_pdb(
             if not n_record:
                 n_lines += 1
 
-    if num_nmr_models != n_model_lines:
+    if num_nmr_models != n_model_lines and num_nmr_models != 0:
         warnings.warn(
-            f"The NUMMDL says {num_nmr_models} NMR models, but only {n_model_lines} found.",
+            f"The NUMMDL says {num_nmr_models} NMR models, but {n_model_lines} found.",
             RuntimeWarning,
             stacklevel=2,
         )

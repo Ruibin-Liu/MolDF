@@ -15,7 +15,7 @@ def test_read_pdb():
     file_path = [CFD, "test_files", "1G03.pdb"]
     test_file = f"{os.sep}".join(file_path)
     pdb = read_pdb(
-        test_file,
+        pdb_file=test_file,
         category_names=["_atom_site"],
         allow_chimera=True,
         need_ter_lines=True,
@@ -26,7 +26,7 @@ def test_read_pdb():
         pdb_df.tail(1).record_name == "TER   "
     ).bool(), "Last record name not 'TER   ' when TER lines are required."
     pdb = read_pdb(
-        test_file,
+        pdb_file=test_file,
         category_names=["_atom_site"],
         allow_chimera=True,
         need_ter_lines=False,
@@ -36,10 +36,42 @@ def test_read_pdb():
         pdb_df.tail(1).record_name == "ATOM  "
     ).bool(), "Last record name not 'ATOM  ' when TER lines are not required."
 
+    # From PDB ID
+    pdb_id = "1VIi"
+    pdb = read_pdb(
+        pdb_id=pdb_id,
+        category_names=["_atom_site"],
+        save_pdb_file=True,
+        allow_chimera=False,
+    )
+    pdb_df = pdb["_atom_site"]
+    assert os.path.exists(
+        f"./PDB_files/{pdb_id.upper()}.pdb"
+    ), "File not saved to PDB_files if pdb_file_dir not provided."
+    assert (
+        pdb_df.head(1).residue_name == "MET"
+    ).bool(), "First 1VII residue is not MET."
+
+    # From Uniprot ID
+    uniprot_id = "P01116"
+    pdb = read_pdb(
+        pdb_id=uniprot_id,
+        category_names=["_atom_site"],
+        save_pdb_file=True,
+        allow_chimera=False,
+    )
+    pdb_df = pdb["_atom_site"]
+    assert os.path.exists(
+        f"./PDB_files/{uniprot_id.upper()}.pdb"
+    ), "File not saved to PDB_files if pdb_file_dir not provided."
+    assert (
+        pdb_df.head(1).residue_number == 1
+    ).bool(), "First P01116 residue number is not 1."
+
     # Non-NMR PDB
     file_path = [CFD, "test_files", "5K9I.pdb"]
     test_file = f"{os.sep}".join(file_path)
-    pdb = read_pdb(test_file, category_names=["_atom_site"])
+    pdb = read_pdb(pdb_file=test_file, category_names=["_atom_site"])
     pdb_df = pdb["_atom_site"]
     assert (
         "nmr_model" not in pdb_df.columns
@@ -56,7 +88,6 @@ def test_read_pdb():
     )
     pdb_df = pdb["_atom_site"]
     pdb_df = pdb_df[pdb_df.record_name == "TER   "]
-    print(pdb_df)
     assert (
         pdb_df.tail(1).atom_number == 14209
     ).bool(), "Chimera PDB didn't get larger than 9999 atoms."
