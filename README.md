@@ -6,7 +6,7 @@ Our `pdbx2df` package primarily parses a PDBx file (mmCIF file: <pdb_id>.cif) in
 
 The old style `PDB` file format is not very well structured compared to the new PDBx file format. However, we can make `pdbx2df` support parsing a PDB file (pdb_id.pdb) into a Python dict of Pandas DataFrames similarly, although many 'blocks' need more post processing. As such, currently only the lines starting with `ATOM`, `HETATM`, and `TER` are read into a category named `_atom_site` which corresponds to the same category in a mmCIF file. And for NMR models, all `ATOM`, `HETATM`, and `TER` lines are read into a single DataFrame but atoms in a NMR model has the same value in the `nmr_model` column which is determined by the number in the corresponding `MODEL` line.
 
-The `TRIPOS MOL2` file format is also supported reading using the same keyword as the PDB and PDBx files. Currently, the `ATOM`, `BOND`, and `MOLECULE` are supported.
+The `TRIPOS MOL2` file format is also supported for reading using the same keyword as the PDB and PDBx files about selecting file categories. Currently, the `ATOM`, `BOND`, and `MOLECULE` are supported.
 
 For the `PDB` and `MOL2` formats, if any other categories are required in your workflow, please raise an issue or PR.
 
@@ -114,4 +114,4 @@ The `write_pdb` function can write PDB files that can be parsed by `Chimera` by 
 
 Since our package can read from and write to PDB files containing NMR models, it is straightforward to read and write trajectory files saved as PDB files by molecular dynamics software, if different frames are surrounded by pairs of `MODEL` and `ENDMDL` lines.
 
-For reading a `MOL2` file, check the [example in the tests folder](https://github.com/Ruibin-Liu/pdbx2df/blob/main/pdbx2df/read_mol2.py).
+For reading `MOL2` files, check the [example in the tests folder](https://github.com/Ruibin-Liu/pdbx2df/blob/main/pdbx2df/read_mol2.py).
