@@ -94,3 +94,18 @@ def test_read_pdb():
     assert (
         pdb_df.tail(1).residue_name == "LEUX"
     ).bool(), "Chimera PDB didn't get 4-letter residue names."
+
+
+def test_read_seq_res():
+    """Test reading the 'SEQRES' section."""
+    pdb_id = "1VII"
+    pdb = read_pdb(
+        pdb_id=pdb_id,
+        category_names=["_seq_res"],
+        save_pdb_file=True,
+        allow_chimera=False,
+    )
+    seq_df = pdb["_seq_res"]
+    assert seq_df["chain_sequence"].to_list() == [
+        "MLSDEDFKAVFGMTRSAFANLPLWKQQNLKKEKGLF"
+    ], "1VII sequence not read in correctly."

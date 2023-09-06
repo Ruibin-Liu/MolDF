@@ -4,12 +4,15 @@ import io
 import os
 import urllib.request
 import warnings
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-IMPLEMENTED_PDB_CATS = ["_atom_site"]
+from .constants import AMINO_ACIDS
+
+IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res"]
 ATOM_SITE = ("ATOM", "HETATM", "TER")
 NMR_MDL = ("NUMMDL", "MODEL", "ENDMDL")
 AF2_MODEL = 4
@@ -110,24 +113,25 @@ def read_pdb(
     ]
 
     if not need_ter_lines:
-        all_reads = ("ATOM", "HETATM") + NMR_MDL
+        all_atom_site_reads = ("ATOM", "HETATM") + NMR_MDL
     else:
-        all_reads = ATOM_SITE + NMR_MDL  # type: ignore
+        all_atom_site_reads = ATOM_SITE + NMR_MDL  # type: ignore
 
     if pdb_file is not None:  # This check is just for mypy
         file_stat = os.stat(pdb_file)
         total_lines = int(file_stat.st_size / 81)
     else:
         total_lines = 100000
-    # array = np.zeros(total_lines, column_name_types)
     n_record = 0
-    n_lines = 0
+    n_lines_till_atom_lines = 0
     with pdb_file_handle:
         line = pdb_file_handle.readline()
         for line in pdb_file_handle:
-            if line.startswith(all_reads):
+            if line.startswith(all_atom_site_reads) and "_atom_site" in category_names:
                 if (not n_record) and line.startswith(("ATOM", "MODEL")):
-                    array = np.zeros(total_lines - n_lines, column_name_types)
+                    array = np.zeros(
+                        total_lines - n_lines_till_atom_lines, column_name_types
+                    )
                 if line.startswith(("ATOM", "HETATM")):
                     array[n_record] = _split_atom_line(
                         line,
@@ -153,21 +157,59 @@ def read_pdb(
                         break
                 else:  # line.startswith("NUMMDL")
                     num_nmr_models = int(line[6:].strip())
-            if not n_record:
-                n_lines += 1
+            elif line.startswith("SEQRES") and "_seq_res" in category_names:
+                chain_residues: dict[str, list[str]] = defaultdict(list)
+                chain_lengths: dict[str, int] = defaultdict(int)
+                while line.startswith("SEQRES"):
+                    items: list[str] = line.strip().split()
+                    chain_id: str = items[2]
+                    chain_length: int = int(items[3])
+                    chain_lengths[chain_id] = chain_length
+                    chain_residues[chain_id].extend(items[4:])
+                    if not n_record and "_atom_site" in category_names:
+                        n_lines_till_atom_lines += 1
+                    line = pdb_file_handle.readline()
 
-    if num_nmr_models != n_model_lines and num_nmr_models != 0:
+            if not n_record and "_atom_site" in category_names:
+                n_lines_till_atom_lines += 1
+
+    if (
+        "_atom_site" in category_names
+        and num_nmr_models != n_model_lines
+        and num_nmr_models != 0
+    ):
         warnings.warn(
             f"The NUMMDL says {num_nmr_models} NMR models, but {n_model_lines} found.",
             RuntimeWarning,
             stacklevel=2,
         )
 
-    df = pd.DataFrame.from_records(array[:n_record])
-    data["_atom_site"] = df
+    if "_atom_site" in category_names:
+        df_atom_site = pd.DataFrame.from_records(array[:n_record])
+        data["_atom_site"] = df_atom_site
+        if not n_model_lines:
+            data["_atom_site"].drop(columns=["nmr_model"], inplace=True)
 
-    if not n_model_lines:
-        data["_atom_site"].drop(columns=["nmr_model"], inplace=True)
+    if "_seq_res" in category_names:
+        chain_sequences: dict[str, str] = {}
+        for chain_id, residues in chain_residues.items():
+            chain_sequences[chain_id] = "".join([AMINO_ACIDS[i] for i in residues])
+            if len(residues) != chain_lengths[chain_id]:
+                warnings.warn(
+                    f"Cols 14-17 value {chain_lengths[chain_id]} contrasts real length {len(residues)}.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+        chain_ids = chain_sequences.keys()
+        chain_num_residues = [len(chain_sequences[chain_id]) for chain_id in chain_ids]
+        chain_seqs = [chain_sequences[chain_id] for chain_id in chain_ids]
+        data["_seq_res"] = pd.DataFrame(
+            {
+                "chain_id": chain_ids,
+                "chain_sequence": chain_seqs,
+                "chain_length": chain_num_residues,
+            }
+        )
 
     return data
 
