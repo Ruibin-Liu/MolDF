@@ -84,7 +84,9 @@ def read_pdb(
     for category_name in category_names:
         if category_name not in IMPLEMENTED_PDB_CATS:
             implemented = ", ".join(IMPLEMENTED_PDB_CATS)
-            raise ValueError(f"Only {implemented} are implemented for the PDB format.")
+            raise NotImplementedError(
+                f"Only {implemented} are implemented for the PDB format."
+            )
         data[category_name] = pd.DataFrame()
 
     num_nmr_models = 0
