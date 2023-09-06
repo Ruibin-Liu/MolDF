@@ -1,3 +1,4 @@
+from pdbx2df.constants import AMINO_ACIDS, ELEMENT_MASSES
 from pdbx2df.read_mol2 import read_mol2
 from pdbx2df.read_pdb import read_pdb
 from pdbx2df.read_pdbx import read_pdbx
@@ -14,5 +15,7 @@ __all__ = [
     "write_pdb",
     "read_mol2",
     "split_line",
+    "AMINO_ACIDS",
+    "ELEMENT_MASSES",
     "__version__",
 ]
