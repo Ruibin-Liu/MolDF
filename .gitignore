@@ -133,3 +133,7 @@ dmypy.json
 
 # devcontainer
 .devcontainer/
+
+# files
+PDB_files/
+PDBx_files/
