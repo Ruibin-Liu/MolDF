@@ -1,3 +1,8 @@
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""PDBx/mmCIF format reading."""
 from __future__ import annotations
 
 import io

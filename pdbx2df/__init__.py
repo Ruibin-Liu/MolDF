@@ -1,3 +1,8 @@
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""pdbx2df exported classes, functions and constants."""
 from pdbx2df.constants import AMINO_ACIDS, ELEMENT_MASSES
 from pdbx2df.read_mol2 import read_mol2
 from pdbx2df.read_pdb import read_pdb

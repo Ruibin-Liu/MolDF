@@ -1,3 +1,8 @@
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""Tests for splitting lines in PDBx/mmCIF files."""
 import sys
 
 import pytest  # type: ignore

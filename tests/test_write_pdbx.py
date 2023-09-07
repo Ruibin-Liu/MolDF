@@ -1,3 +1,8 @@
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""Tests for writing PDBx/mmCIF files."""
 import filecmp
 import os
 import sys

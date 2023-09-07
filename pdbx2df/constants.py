@@ -1,5 +1,8 @@
-"""Store constants used in pdbx2df.
-"""
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""Constants"""
 
 AMINO_ACIDS = {
     "ALA": "A",

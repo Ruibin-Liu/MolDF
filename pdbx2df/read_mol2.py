@@ -1,4 +1,9 @@
-from __future__ import annotations
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""Mol2 format reading."""
+
 
 import os
 import warnings

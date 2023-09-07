@@ -1,6 +1,8 @@
-"""
-This file contains a Pandas DataFrame subclass for dealing with PDB data.
-"""
+# pdbx2df
+# Author: Ruibin Liu <ruibinliuphd@gmail.com>
+# License: MIT
+# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+"""PdbDataFrame as a subclass of Pandas DataFrame"""
 from __future__ import annotations
 
 import functools
