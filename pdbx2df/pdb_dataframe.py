@@ -554,8 +554,8 @@ class PdbDataFrame(pd.DataFrame):
                 all_residues.append(residue)
         return all_residues
 
-    @functools.lru_cache()
     @staticmethod
+    @functools.lru_cache()
     def get_distance_matrix(pdb_df: PdbDataFrame, use_r2: bool = True) -> np.ndarray:
         """Function to calculate the distance matrix.
 
