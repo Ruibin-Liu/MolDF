@@ -3,7 +3,7 @@
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
 """Mol2 format reading."""
-
+from __future__ import annotations
 
 import os
 import warnings
