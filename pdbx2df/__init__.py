@@ -4,6 +4,7 @@
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
 """pdbx2df exported classes, functions and constants."""
 from pdbx2df.constants import AMINO_ACIDS, ELEMENT_MASSES
+from pdbx2df.pdb_dataframe import PdbDataFrame
 from pdbx2df.read_mol2 import read_mol2
 from pdbx2df.read_pdb import read_pdb
 from pdbx2df.read_pdbx import read_pdbx
@@ -14,6 +15,7 @@ from pdbx2df.write_pdbx import write_pdbx
 from .version import __version__
 
 __all__ = [
+    "PdbDataFrame",
     "read_pdbx",
     "write_pdbx",
     "read_pdb",
