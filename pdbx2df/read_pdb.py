@@ -135,7 +135,7 @@ def read_pdb(
         line = pdb_file_handle.readline()
         for line in pdb_file_handle:
             if line.startswith(all_atom_site_reads) and "_atom_site" in category_names:
-                if (not n_record) and line.startswith(("ATOM", "MODEL")):
+                if (not n_record) and line.startswith(("ATOM", "HETATM", "MODEL")):
                     array = np.zeros(
                         total_lines - n_lines_till_atom_lines, column_name_types
                     )
