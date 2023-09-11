@@ -128,12 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# vscode
-.vscode/
-
-# devcontainer
+# dev
 .devcontainer/
-
-# files
+.vscode/
 PDB_files/
 PDBx_files/
+.pdbx2df_venv/
