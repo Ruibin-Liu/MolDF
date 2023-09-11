@@ -2,33 +2,48 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""PdbDataFrame as a subclass of Pandas DataFrame"""
+"""
+PdbDataFrame as a subclass of Pandas DataFrame
+
+Several features are added to make PDB data more accessible and selectable:
+
+1. Properties like `sequences`, `heavy_atoms`, `back_bone`, `water` etc. are
+directly accessed by dot operation.
+
+2. Atom selection by using methods whose names are just the column names plus
+'s'. For example, selecting atoms by names is simply `df.atom_names([names])`
+where `atom_name` is the column name and `atom_names` is the selection function.
+Each selection returns a `PdbDataFrame` object as well, which means we can
+chain selections one by one like `df.atom_names([names]).residue_numbers([numbers])`.
+
+3. Distance matrix as a property and `classmethod`.
+"""
 from __future__ import annotations
 
 import functools
-from functools import _lru_cache_wrapper
+import warnings
+from collections import defaultdict
+from collections.abc import Iterable
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
-from scipy.spatial.distance import pdist, squareform  # type: ignore
+from scipy.spatial.distance import cdist, pdist, squareform  # type: ignore
+from typing_extensions import Self
 
 from .constants import AMINO_ACIDS, ELEMENT_MASSES
+
+RESIDUE_CODES = AMINO_ACIDS
 
 
 class PdbDataFrame(pd.DataFrame):
     """Pandas DataFrame with extended attributes and methods for PDB data."""
 
     _metadata = [
-        # "_n_atoms",
-        # "_n_residues",
-        # "_n_chains",
-        # "_n_models",
-        # "_n_segments",
-        # "_residues",
-        # "_COM",
-        # "_COG",
-        # "_sequence",
         "_use_squared_distance",
+        "_use_square_form",
+        "_is_chimera",
+        "_RESIDUE_CODES",
+        "_ELEMENT_MASSES",
     ]
 
     def __init__(
@@ -36,8 +51,9 @@ class PdbDataFrame(pd.DataFrame):
         *args,
         pdb_format: str | None = None,
         use_squared_distance: bool = True,
+        use_square_form: bool = False,
         **kwargs,
-    ):
+    ) -> None:
         """Init the PdbDataFrame class like a Pandas DataFrame with some extra keywords.
 
         Args:
@@ -45,63 +61,203 @@ class PdbDataFrame(pd.DataFrame):
                 If None, "PDB" is assumed.
             use_squared_distance (bool; defaults to True): whether to use squared distance
                 when calculating distance matrix.
-        """
+            use_square_form (bool; defaults to False): whether to use a square matrix
+                for the distance matrix.
+        """  # noqa
         super().__init__(*args, **kwargs)
         self.pdb_format: str | None = pdb_format
         if self.pdb_format is None:
             self.pdb_format = "PDB"
         self._use_squared_distance: bool = use_squared_distance
+        self._use_square_form: bool = use_square_form
+        self._hash_random_state: int = 0
+        self._is_chimera = False
+        self._RESIDUE_CODES: dict[str, str] = {}
+        self._ELEMENT_MASSES: dict[str, float] = {}
+        self._ter_line_removed: bool = False
+        self._atoms: Self | None = None
 
     @property
     def _constructor(self):
         return PdbDataFrame
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Use head X coords to hash; for distance matrix calculation cache."""
-        return hash(tuple(self.head().x_coord))
+        sample_atom_numbers = self.sample(
+            5, random_state=self.hash_random_state, replace=True
+        )["atom_number"]
+        return hash(tuple(self[self.atom_number.isin(sample_atom_numbers)].x_coord))
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """Use head X coords to compare; for distance matrix calculation cache."""
-        return hash(tuple(self.head().x_coord)) == hash(tuple(other.head().x_coord))
+        return self.__hash__() == other.__hash__()
 
     @property
-    def atoms(self):
+    def RESIDUE_CODES(self) -> dict[str, str]:
+        """Returns the residue code conversion dict."""
+        if not self._RESIDUE_CODES:
+            if self.is_chimera:
+                self._RESIDUE_CODES = {
+                    res.ljust(4): code for res, code in RESIDUE_CODES.items()
+                }
+            else:
+                self._RESIDUE_CODES = RESIDUE_CODES
+
+        return self._RESIDUE_CODES
+
+    @RESIDUE_CODES.setter
+    def RESIDUE_CODES(self, residue_codes: dict[str, str]) -> None:
+        """Set the residue code conversion dict."""
+        if self.is_chimera:
+            self._RESIDUE_CODES = {
+                res.ljust(4): code for res, code in residue_codes.items()
+            }
+        else:
+            self._RESIDUE_CODES = residue_codes
+
+    @property
+    def ELEMENT_MASSES(self) -> dict[str, float]:
+        """Returns the element mass dict."""
+        if not self._ELEMENT_MASSES:
+            self._ELEMENT_MASSES = {
+                e.rjust(2): mass for e, mass in ELEMENT_MASSES.items()
+            }
+        return self._ELEMENT_MASSES
+
+    @ELEMENT_MASSES.setter
+    def ELEMENT_MASSES(self, element_masses: dict[str, float]):
+        """Set the element mass dict."""
+        self._ELEMENT_MASSES = {e.rjust(2): mass for e, mass in element_masses.items()}
+
+    @property
+    def is_chimera(self) -> bool:
+        """Returns whether the original PDB was Chimera compatible format."""
+        try:
+            if len(self.head(1).residue_name[0]):
+                self._is_chimera = True
+        except AttributeError:
+            pass  # 'residue_name' not in self.coords
+        except IndexError:
+            pass  # empty
+
+        return self._is_chimera
+
+    @property
+    def hash_random_state(self) -> int:
+        """Returns the random_state for the hash function."""
+        return self._hash_random_state
+
+    @hash_random_state.setter
+    def hash_random_state(self, random_state: int) -> None:
+        """Sets the random_state for the hash function.
+
+        Args:
+            random_state (int): the random state for setting the hash_random_state.
+        """
+        self._hash_random_state = random_state
+
+    @property
+    def use_squared_distance(self) -> bool:
+        """Returns whether R or R2 is used in distance matrix calculations."""
+        return self._use_squared_distance
+
+    @use_squared_distance.setter
+    def use_squared_distance(self, use_r2: bool) -> None:
+        """Set the use_squared_distance property value.
+
+        Args:
+            use_r2 (bool): boolean value to set 'use_squared_distance'.
+        """
+        self._use_squared_distance = use_r2
+
+    @property
+    def use_square_form(self) -> bool:
+        """Returns whether the distance matrix is in a square form."""
+        return self._use_square_form
+
+    @use_square_form.setter
+    def use_square_form(self, square_form: bool) -> None:
+        """Set the use_square_form property value.
+
+        Args:
+            square_form (bool): boolean value to set 'use_square_form'.
+        """
+        self._use_square_form = square_form
+
+    @property
+    def atoms(self) -> Self:
         """Returns 'ATOM' and 'HETATM' entries.
 
         Returns:
             PdbDataFrame: sub DataFrame.
         """
-        return self[self.record_name.str.strip().isin(["ATOM", "HETATM"])]
+        if self._atoms is None:
+            if self._ter_line_removed:
+                self._atoms = self
+            else:
+                self._atoms = self[self.record_name.isin(["ATOM  ", "HETATM"])]
+                self._ter_line_removed = True
+        return self._atoms
 
     @property
-    def backbone(self):
+    def coords(self) -> Self:
+        """Returns only the 'x_coord', 'y_coord', and 'z_coord' columns."""
+        return self.atoms[["x_coord", "y_coord", "z_coord"]]
+
+    @property
+    @functools.lru_cache()
+    def sequences(self) -> dict[str, str]:
+        """Returns the sequences for each chain.
+
+        Returns:
+            dict[str, str]: a dict of {chain_id, chain_sequence}
+        """
+        chain_sequence: dict[str, str] = defaultdict(str)
+        for resi_info in self.residue_list:
+            chain_sequence[resi_info[0]] += self.RESIDUE_CODES[resi_info[1]]
+        return chain_sequence
+
+    @property
+    def residue_list(self) -> list[tuple]:
+        """Returns all residues as a list of tuple (chain_id, residue_name, residue_number)"""  # noqa
+        return PdbDataFrame.get_residues(self)
+
+    @property
+    def backbone(self) -> Self:
         """Returns backbone or N+CA+C+O atoms.
 
         Returns:
             PdbDataFrame: sub DataFrame.
         """
-        return self.atom_names(["N", "CA", "C", "O"])
+        return self.atom_names(
+            ["N", "CA", "C", "O"],
+            suppress_warning=True,
+        ).element_symbols(["C", "N", "O"])
 
     @property
-    def side_chain(self):
+    def side_chain(self) -> Self:
         """Returns side chain or NOT N+CA+C+O atoms.
 
         Returns:
             PdbDataFrame: sub DataFrame.
         """
-        return self.atom_names(["N", "CA", "C", "O"], invert=True)
+        return self.atom_names(
+            ["N", "CA", "C", "O"],
+            invert=True,
+            suppress_warning=True,
+        ).element_symbols(["C", "N", "O"])
 
     @property
-    def ca_atoms(self):
+    def ca_atoms(self) -> Self:
         """Returns CA atoms.
 
         Returns:
             PdbDataFrame: sub DataFrame.
         """
-        return self.atom_names(["CA"])
+        return self.atom_names(["CA"], suppress_warning=True).element_symbols(["C"])
 
     @property
-    def heavy_atoms(self):
+    def heavy_atoms(self) -> Self:
         """Returns heavy or NOT hydrogen atoms.
 
         Returns:
@@ -110,9 +266,36 @@ class PdbDataFrame(pd.DataFrame):
         return self.element_symbols(["H", "D", "T"], invert=True)
 
     @property
+    def hetero_atoms(self) -> Self:
+        """Returns hetero (HETATM) atoms.
+
+        Returns:
+            PdbDataFrame: sub DataFrame.
+        """
+        return self.atoms.record_names(["HETATM"])
+
+    @property
+    def residues(self) -> Self:
+        """Returns residue (ATOM) atoms.
+
+        Returns:
+            PdbDataFrame: sub DataFrame.
+        """
+        return self.atoms.record_names(["ATOM  "])
+
+    @property
+    def water(self) -> Self:
+        """Returns all water atoms.
+
+        Returns:
+            PdbDataFrame: sub DataFrame.
+        """
+        return self.atoms.residue_names(["HOH"])
+
+    @property
     def n_atoms(self) -> int:
         """Returns number of atoms."""
-        return len(self[self.record_name.str.strip().isin(["ATOM", "HETATM"])])
+        return len(self.atoms)
 
     @property
     def n_residues(self) -> int:
@@ -122,10 +305,10 @@ class PdbDataFrame(pd.DataFrame):
     @property
     def n_chains(self) -> int:
         """Returns number of chains."""
-        ter_lines = self[self.record_name.str.strip() == "TER"]
+        ter_lines = self[self.record_name == "TER   "]
         ter_residues = PdbDataFrame.get_residues(ter_lines)
 
-        oxt_lines = self[self.atom_name.str.strip() == "OXT"]
+        oxt_lines = self[self.atom_name == " OXT"]
         oxt_residues = PdbDataFrame.get_residues(oxt_lines)
 
         n_chain_ids = len(self.chain_id.unique())
@@ -150,47 +333,26 @@ class PdbDataFrame(pd.DataFrame):
         return 1
 
     @property
-    def residues(self) -> list[tuple]:
-        """Returns all residues as a tuple of (chain_id, residue_name, residue_number)"""
-        return PdbDataFrame.get_residues(self)
-
-    @property
     @functools.lru_cache()
-    def sequence(self) -> str:
-        """Returns the sequence."""
-        return "".join([AMINO_ACIDS[i[1]] for i in self.residues])
-
-    @property
-    @functools.lru_cache()
-    def center_of_geometry(self) -> tuple[float, float, float]:
+    def center_of_geometry(self) -> np.ndarray:
         """Returns the center of geometry."""
-        return (
-            np.mean(self.atoms.x_coord),
-            np.mean(self.atoms.y_coord),
-            np.mean(self.atoms.z_coord),
-        )
+        return np.mean(self.coords.values, axis=0)
 
     @property
     @functools.lru_cache()
-    def center_of_mass(self) -> tuple[float, float, float]:
+    def center_of_mass(self) -> np.ndarray:
         """Returns the center of mass."""
         masses = self.atoms.get_masses()
-        total_mass = sum(masses)
-        return (
-            sum(np.array(self.atoms.x_coord) * np.array(masses)) / total_mass,
-            sum(np.array(self.atoms.y_coord) * np.array(masses)) / total_mass,
-            sum(np.array(self.atoms.z_coord) * np.array(masses)) / total_mass,
-        )
+        masses = masses / masses.sum()
+        return np.mean(self.coords.values * masses[:, None], axis=0)
 
-    def get_masses(self) -> list:
+    @functools.lru_cache()
+    def get_masses(self) -> np.ndarray:
         """Returns the masses for all atoms."""
-        masses = [ELEMENT_MASSES[atom.strip()] for atom in self.element_symbol]
+        masses = np.zeros(len(self.atoms.element_symbol), dtype="float32")
+        for i, element in enumerate(self.atoms.element_symbol):
+            masses[i] = self.ELEMENT_MASSES[element]
         return masses
-
-    @property
-    def use_squared_distance(self) -> bool:
-        """Returns whether R or R2 is used in distance matrix calculations."""
-        return self._use_squared_distance
 
     @property
     def distance_matrix(self) -> np.ndarray:
@@ -198,9 +360,10 @@ class PdbDataFrame(pd.DataFrame):
         return PdbDataFrame.get_distance_matrix(
             self.atoms,
             use_r2=self.use_squared_distance,
+            square_form=self.use_square_form,
         )  # type: ignore
 
-    def record_names(self, names: list[str], invert: bool = False):
+    def record_names(self, names: list[str], invert: bool = False) -> Self:
         """Filter by 'record_name'.
 
         Args:
@@ -210,39 +373,84 @@ class PdbDataFrame(pd.DataFrame):
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
+        names = [name.ljust(6) for name in names]
         if invert:
-            return self[~self.record_name.str.strip().isin(names)]
-        return self[self.record_name.str.strip().isin(names)]
+            return self[~self.record_name.isin(names)]
+        return self[self.record_name.isin(names)]
 
-    def atom_numbers(self, numbers: list[int], invert: bool = False):
-        """Filter by 'atom_number'.
+    def atom_numbers(
+        self,
+        numbers: list[int] | int,
+        relation: str | None = None,
+        invert: bool = False,
+    ) -> Self:
+        """Filter by `atom_number`.
 
         Args:
-            numbers (list[int]): a list of 'atom_number's
+            numbers (list[int]|int): one or a list of `atom_number`s.
+            relation (str|None; defaults to None): `atom_number` relationship to `numbers`.
+                If `numbers` is an integer, it has to be one of `<`, `<=`, `=`, `>=`, and `>`.
+                If None, '<=' is used. Ignored if a list of integers are provided to `numbers`.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
-        if invert:
-            return self[~self.atom_number.isin(numbers)]
-        return self[self.atom_number.isin(numbers)]
+        return self._filter_num_col(
+            numbers, "atom_number", relation=relation, invert=invert
+        )
 
-    def atom_names(self, names: list[str], invert: bool = False):
-        """Filter by 'atom_name'.
+    def atom_names(
+        self,
+        names: list[str],
+        names_2c: list[str] | None = None,
+        invert: bool = False,
+        suppress_warning: bool = False,
+    ) -> Self:
+        """Filter by `atom_name`.
 
         Args:
-            names (list[str]): a list of 'atom_name's
+            names (list[str]): a list of `atom_name`s whose element symbols have only one character.
+                Atoms in common residues and ligands should be provide here like `C, H, O, N, S, P, F`
+            names_2c (list[str]|None; defaults to None): a list of `atom_name`s whose element symbols
+                have two characters like ion (`FE`) and chloride (`CL`).
             invert (bool; defaults to False): whether to invert the selection.
+            suppress_warning(bool; defaults to False): whether to suppress the warning message about
+                possible conflicts between `names` and `names_2c`.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
-        """
-        if invert:
-            return self[~self.atom_name.str.strip().isin(names)]
-        return self[self.atom_name.str.strip().isin(names)]
+        """  # noqa
+        atom_name_strings: list[str] = []
+        for name in names:
+            if len(name) == 4:
+                atom_name_strings.append(name)
+            else:
+                atom_name_strings.append(f" {name}".ljust(4))
+            if len(name) == 2 and f"{name[0]}{name[1].lower()}" in self.ELEMENT_MASSES:
+                if f" {name[0]}" not in self.ELEMENT_MASSES:
+                    atom_name_strings.append(f"{name}".ljust(4))
+                    # Like 'MG' where ' M' is not a legal element in self.ELEMENT_MASSES.
+                    continue
+                if suppress_warning:
+                    continue
+                message = f"Atom name {name} is an atom of element {name[0]} "
+                message += f"but not element {name[0]}{name[1].lower()}."
+                message += "If you want the latter, put it in the 'names_2c' list."
+                warnings.warn(
+                    message,
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+        if names_2c is not None:
+            for name in names_2c:
+                atom_name_strings.append(f"{name}".ljust(4))
 
-    def alt_locs(self, locs: list[str], invert: bool = False):
+        if invert:
+            return self[~self.atom_name.isin(atom_name_strings)]
+        return self[self.atom_name.isin(atom_name_strings)]
+
+    def alt_locs(self, locs: list[str], invert: bool = False) -> Self:
         """Filter by 'atom_number'.
 
         Args:
@@ -253,10 +461,10 @@ class PdbDataFrame(pd.DataFrame):
             PdbDataFrame: sub DataFrame after the filtering
         """
         if invert:
-            return self[~self.alt_loc.str.strip().isin(locs)]
-        return self[self.alt_loc.str.strip().isin(list(locs) + [""])]
+            return self[~self.alt_loc.isin(locs)]
+        return self[self.alt_loc.isin(list(locs) + [""])]
 
-    def residue_names(self, names: list[str], invert: bool = False):
+    def residue_names(self, names: list[str], invert: bool = False) -> Self:
         """Filter by 'residue_names'.
 
         Args:
@@ -270,7 +478,7 @@ class PdbDataFrame(pd.DataFrame):
             return self[~self.residue_name.str.strip().isin(names)]
         return self[self.residue_name.str.strip().isin(names)]
 
-    def chain_ids(self, ids: list[str], invert: bool = False):
+    def chain_ids(self, ids: list[str], invert: bool = False) -> Self:
         """Filter by 'chain_id'.
 
         Args:
@@ -284,21 +492,29 @@ class PdbDataFrame(pd.DataFrame):
             return self[~self.chain_id.isin(ids)]
         return self[self.chain_id.isin(ids)]
 
-    def residue_numbers(self, numbers: list[int], invert: bool = False):
-        """Filter by 'residue_number'.
+    def residue_numbers(
+        self,
+        numbers: list[int] | int,
+        relation: str | None = None,
+        invert: bool = False,
+    ) -> Self:
+        """Filter by `residue_number`.
 
         Args:
-            numbers (list[int]): a list of 'residue_number's
+            numbers (list[int]|int): one or a list of `residue_number`s.
+            relation (str|None; defaults to None): `residue_number` relationship to `numbers`.
+                If `numbers` is an integer, it has to be one of `<`, `<=`, `=`, `>=`, and `>`.
+                If None, '<=' is used. Ignored if a list of integers are provided to `numbers`.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
-        """
-        if invert:
-            return self[~self.residue_number.isin(numbers)]
-        return self[self.residue_number.isin(numbers)]
+        """  # noqa
+        return self._filter_num_col(
+            numbers, "residue_number", relation=relation, invert=invert
+        )
 
-    def insertions(self, codes: list[str], invert: bool = False):
+    def insertions(self, codes: list[str], invert: bool = False) -> Self:
         """Filter by 'insertion'.
 
         Args:
@@ -312,86 +528,131 @@ class PdbDataFrame(pd.DataFrame):
             return self[~self.insertion.isin(codes)]
         return self[self.insertion.isin(codes)]
 
-    def x_coords(self, value: float, invert: bool = False, epsilon: float = 0.01):
+    def x_coords(
+        self,
+        value: float,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float = 0.01,
+    ) -> Self:
         """Filter by 'x_coord'.
 
         Args:
             value (float): value to select 'x_coord's.
+            relation (str|None; defaults to None): 'x_coord' relationship to 'value'.
+                It has to be one of '<', '<=', '=', '>=', and '>'. If None, '<=' is used.
             invert (bool; defaults to False): whether to invert the selection.
-            epsilon (float; defaults to 0.001): atoms |x_coord - value| <= epsilon are selected when invert=False.
+            epsilon (float; defaults to 0.001): atoms |x_coord - value| <= epsilon
+                are selected when invert = False.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
-        """
-        if invert:
-            return self[abs(self.x_coord - value) > epsilon]
-        return self[abs(self.x_coord - value) <= epsilon]
+        """  # noqa
+        return self._filter_num_col(
+            value, "x_coord", relation=relation, invert=invert, epsilon=epsilon
+        )
 
-    def y_coords(self, value: float, invert: bool = False, epsilon: float = 0.01):
+    def y_coords(
+        self,
+        value: float,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float = 0.01,
+    ) -> Self:
         """Filter by 'y_coord'.
 
         Args:
             value (float): value to select 'y_coord's.
+            relation (str|None; defaults to None): 'y_coord' relationship to 'value'.
+                It has to be one of '<', '<=', '=', '>=', and '>'. If None, '<=' is used.
             invert (bool; defaults to False): whether to invert the selection.
-            epsilon (float; defaults to 0.001): atoms |y_coord - value| <= epsilon are selected when invert=False.
+            epsilon (float; defaults to 0.001): atoms |y_coord - value| <= epsilon
+                are selected when invert=False.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
-        if invert:
-            return self[abs(self.y_coord - value) > epsilon]
-        return self[abs(self.y_coord - value) <= epsilon]
+        return self._filter_num_col(
+            value, "y_coord", relation=relation, invert=invert, epsilon=epsilon
+        )
 
-    def z_coords(self, value: float, invert: bool = False, epsilon: float = 0.01):
-        """Filter by 'z_coord'.
+    def z_coords(
+        self,
+        value: float,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float = 0.01,
+    ) -> Self:
+        """Filter by `z_coord`.
 
         Args:
-            value (float): value to select 'z_coord's.
+            value (float): value to select `z_coord`s.
+            relation (str|None; defaults to None): `z_coord` relationship to `value`.
+                It has to be one of '<', '<=', '=', '>=', and '>'. If None, '<=' is used.
             invert (bool; defaults to False): whether to invert the selection.
-            epsilon (float; defaults to 0.001): atoms |z_coord - value| <= epsilon are selected when invert=False.
+            epsilon (float; defaults to 0.001): atoms |z_coord - value| <= epsilon
+                are selected when invert=False.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
-        if invert:
-            return self[abs(self.y_coord - value) > epsilon]
-        return self[abs(self.y_coord - value) <= epsilon]
+        return self._filter_num_col(
+            value, "z_coord", relation=relation, invert=invert, epsilon=epsilon
+        )
 
-    def occupancies(self, value: float, invert: bool = False, epsilon: float = 0.01):
-        """Filter by 'occupancy'.
+    def occupancies(
+        self,
+        value: float,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float = 0.01,
+    ) -> Self:
+        """Filter by `occupancy`.
 
         Args:
-            value (float): value to select 'occupancy's.
+            value (float): value to select `occupancy`s.
+            relation (str|None; defaults to None): `occupancy` relationship to `value`.
+                It has to be one of '<', '<=', '=', '>=', and '>'. If None, '<=' is used.
             invert (bool; defaults to False): whether to invert the selection.
-            epsilon (float; defaults to 0.001): atoms |occupancy - value| <= epsilon are selected when invert=False.
+            epsilon (float; defaults to 0.001): atoms |occupancy - value| <= epsilon
+                are selected when invert=False.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
-        if invert:
-            return self[abs(self.occupancy - value) > epsilon]
-        return self[abs(self.occupancy - value) <= epsilon]
+        return self._filter_num_col(
+            value, "occupancy", relation=relation, invert=invert, epsilon=epsilon
+        )
 
-    def b_factors(self, value: float, invert: bool = False, epsilon: float = 0.01):
-        """Filter by 'b_factor'.
+    def b_factors(
+        self,
+        value: float,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float = 0.01,
+    ) -> Self:
+        """Filter by `b_factor`.
 
         Args:
-            value (float): value to select 'b_factor's.
+            value (float): value to select `b_factor`s.
+            relation (str|None; defaults to None): `b_factor` relationship to `value`.
+                It has to be one of '<', '<=', '=', '>=', and '>'. If None, '<=' is used.
             invert (bool; defaults to False): whether to invert the selection.
-            epsilon (float; defaults to 0.001): atoms |b_factor - value| <= epsilon are selected when invert=False.
+            epsilon (float; defaults to 0.001): atoms |b_factor - value| <= epsilon
+                are selected when invert=False.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
-        if invert:
-            return self[abs(self.b_factor - value) > epsilon]
-        return self[abs(self.b_factor - value) <= epsilon]
+        return self._filter_num_col(
+            value, "occupancy", relation=relation, invert=invert, epsilon=epsilon
+        )
 
     def segment_ids(self, ids: list[str], invert: bool = False):
-        """Filter by 'segment_id'.
+        """Filter by `segment_id`.
 
         Args:
-            ids (list[str]): a list of 'segment_id's.
+            ids (list[str]): a list of '`segment_id`s.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
@@ -402,137 +663,282 @@ class PdbDataFrame(pd.DataFrame):
         return self[self.segment_id.isin(ids)]
 
     def element_symbols(self, symbols: list[str], invert: bool = False):
-        """Filter by 'element_symbol'.
+        """Filter by `element_symbol`.
 
         Args:
-            symbols (list[str]): a list of 'element_symbol's.
+            symbols (list[str]): a list of `element_symbol`s.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
+        symbols = [symbol.upper().rjust(2) for symbol in symbols]
         if invert:
-            return self[~self.element_symbol.str.strip().isin(symbols)]
-        return self[self.element_symbol.str.strip().isin(symbols)]
+            return self[~self.element_symbol.isin(symbols)]
+        return self[self.element_symbol.isin(symbols)]
 
     def charges(self, charges: list[str], invert: bool = False):
-        """Filter by 'charge'.
+        """Filter by `charge`.
 
         Args:
-            charges (list[str]): a list of 'charge's.
+            charges (list[str]): a list of `charge`s.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
         """
         if invert:
-            return self[~self.charge.str.strip().isin(charges)]
-        return self[self.charge.str.strip().isin(charges)]
+            return self[~self.charge.isin(charges)]
+        return self[self.charge.isin(charges)]
 
-    def nmr_models(self, models: list[int], invert=False):
-        """Filter by 'nmr_model'.
+    def nmr_models(
+        self, models: list[int] | int, relation: str | None = None, invert: bool = False
+    ) -> Self:
+        """Filter by `nmr_model`.
 
         Args:
-            models (list[int]): a list of 'nmr_model's.
+            models (list[int]|int): one or a list of `nmr_model` ids.
+            relation (str|None; defaults to None): `nmr_model` relationship to `models`.
+                If `models` is an integer, it has to be one of `<`, `<=`, `=`, `>=`, and `>`.
+                If None, '<=' is used. Ignored if a list of integers are provided to `models`.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
-        """
+        """  # noqa
         if "nmr_model" in self.columns:
-            if invert:
-                return self[~self.nmr_model.isin(models)]
-            return self[self.nmr_model.isin(models)]
-        elif models == [1]:
-            if invert:
-                return self[self.record_name == "IMPOSSIBLE"]
-            return self
+            return self._filter_num_col(
+                models, "nmr_model", relation=relation, invert=invert
+            )
+        return self
 
     def distances(
         self,
-        other: tuple[float, float, float] | PdbDataFrame,
+        other: Iterable | np.ndarray | Self,
         cut_off: float = np.inf,
         to: str | None = None,
-        invert=False,
-    ):
+        invert: bool = False,
+    ) -> Self:
         """Filter by distance to a reference point or group of atoms.
 
         Args:
-            other (tuple[float, float, float] | list[float] | PdbDataFrame): the other group's coordinate(s).
+            other (Iterable | PdbDataFrame): the other group's coordinate(s).
             cut_off (float; defaults to numpy.inf): the distance cutoff to filter.
-            to (str|None; defaults to None): if 'other' is a group atoms, using which method to determine
-                whether the atoms meet the cut_off distance. If None, "COM" or center of mass is used.
+            to (str|None; defaults to None): if `other` is a group atoms, using which method to determine
+                whether the atoms meet the cut_off distance. If None, `COM` or center of mass is used
+                if `other` is `PdbDataFrame`, and `COG` or center of geometry is used if `other` is `Iterable`.
+
+                `com`, `center of mass`, `center_of_mass`: use the center of mass for the `other`;
+                `cog`, `center of geometry`, `center_of_geometry`: use the center of geometry for the `other`;
+                `all`: whether all the pair-distances meet the `cut_off` distance criteria.
+                `any`: whether any of the pair-distances meets the `cut_off` distance criteria.
             invert (bool; defaults to False): whether to invert the selection.
 
         Returns:
             PdbDataFrame: sub DataFrame after the filtering
-        """
-        cut_off = cut_off**2
-        if to is None and isinstance(other, PdbDataFrame):
-            to = "COM"
-        other_center: tuple[float, float, float] | _lru_cache_wrapper[
-            tuple[float, float, float]
-        ] | None = None
-        if to == "COM":
-            if isinstance(other, PdbDataFrame):
-                other_center = other.center_of_mass
-            else:
-                other_center = tuple(other)  # type: ignore
-        elif to == "COG":
-            if isinstance(other, PdbDataFrame):
-                other_center = other.center_of_geometry
-            else:
-                other_center = tuple(other)  # type: ignore
-        elif to in ["Any", "All"]:
-            other_center = None
-        else:
-            raise NotImplementedError(
-                f"Only center of mass (COM) and center of geometry (COG) is implemented, not {to}."
+        """  # noqa
+        if not (isinstance(other, type(self)) or isinstance(other, Iterable)):
+            raise TypeError(
+                f"Only 'PdbDataFrame' and 'Iterable' types are supported, not {type(other)}"
             )
 
-        indices = []
-        if to == "All":
-            indices = list(self.atoms.index)
-        for index, self_x, self_y, self_z in zip(
-            self.atoms.index, self.atoms.x_coord, self.atoms.y_coord, self.atoms.z_coord
-        ):
-            if isinstance(other_center, tuple):
-                distance = (
-                    (self_x - other_center[0]) ** 2
-                    + (self_y - other_center[1]) ** 2
-                    + (self_z - other_center[2]) ** 2
-                )  # type: ignore
-                if distance <= cut_off and not invert:
-                    indices.append(index)
-                elif distance > cut_off and invert:
-                    indices.append(index)
-            elif isinstance(other, PdbDataFrame):
-                for other_x, other_y, other_z in zip(
-                    other.atoms.x_coord, other.atoms.y_coord, other.atoms.z_coord
-                ):
-                    distance = (
-                        (self_x - other_x) ** 2
-                        + (self_y - other_y) ** 2
-                        + (self_z - other_z) ** 2
+        if isinstance(other, Iterable) and not isinstance(other, type(self)):
+            other = np.asanyarray(other, dtype="float32")
+            if other.shape != (3,):
+                if len(other.shape) != 2 or other.shape[1] != 3:
+                    raise TypeError(
+                        f"An 'Iterable' input should have a (N, 3) shape, not '{other.shape}'."
                     )
-                    if to == "Any":
-                        if (
-                            distance <= cut_off
-                            and (not invert)
-                            and index not in indices
-                        ):
-                            indices.append(index)
-                        elif distance > cut_off and invert and index not in indices:
-                            indices.append(index)
-                    else:  # 'All'
-                        if distance > cut_off and (not invert) and index in indices:
-                            indices.remove(index)
-                        elif distance <= cut_off and invert and index in indices:
-                            indices.remove(index)
-        return self.iloc[indices]
+            else:
+                other = other.reshape(1, 3)
 
-    @staticmethod
-    def get_residues(pdb_df: PdbDataFrame | pd.DataFrame) -> list[tuple]:
+        cut_off = cut_off**2
+
+        allowed_tos = [
+            "com",
+            "center of mass",
+            "center_of_mass",
+            "cog",
+            "center of geometry",
+            "center_of_geometry",
+            "any",
+            "all",
+        ]
+        if to is None or to.lower() not in allowed_tos:
+            if to is not None:
+                message = "Only center of mass (COM), center of geometry (COG) "
+                message += f"'all', or 'any' is supported. '{to}' is reset to "
+                if isinstance(other, type(self)):
+                    message += "'COM' for 'to'."
+                else:
+                    message += "'COG' for 'to'."
+                warnings.warn(
+                    message,
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+            to = "COG"
+            if isinstance(other, type(self)):
+                to = "COM"
+        elif to.lower() in [
+            "com",
+            "center of mass",
+            "center_of_mass",
+        ] and not isinstance(other, type(self)):
+            message = "Only center of geometry (COG), 'all', or 'any' is supported "
+            message += f"if 'other' is 'Iterable'. '{to}' is reset to 'COG' for 'to'."
+            to = "COG"
+            warnings.warn(
+                message,
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        other_data: np.ndarray | tuple | Self = np.asanyarray(other)
+        if isinstance(other, type(self)):
+            if to.lower() in ["com", "center of mass", "center_of_mass"]:
+                to = "COM"
+                other_data = np.asanyarray(other.center_of_mass)
+                other_data = (other_data[0], other_data[1], other_data[2])
+            elif to.lower() in ["cog", "center of geometry", "center_of_geometry"]:
+                to = "COG"
+                other_data = np.asanyarray(other.center_of_geometry)
+                other_data = (other_data[0], other_data[1], other_data[2])
+            else:  # 'any' or 'all'
+                to = to.upper()
+                other_data = other.coords
+
+        else:
+            if to.lower() in ["cog", "center of geometry", "center_of_geometry"]:
+                to = "COG"
+                other_data = np.mean(other, axis=0)
+                other_data = (other_data[0], other_data[1], other_data[2])
+            else:  # 'any' or 'all'
+                to = to.upper()
+                other_data = tuple(
+                    [
+                        (other[i, 0], other[i, 1], other[i, 2])
+                        for i in range(other.shape[0])
+                    ]
+                )
+
+        distance_matrix = PdbDataFrame.get_distance_matrix(
+            self,
+            other_data=other_data,
+        )
+        mask = distance_matrix <= cut_off
+        if to in ["COG", "COM"]:
+            if invert:
+                return self.atoms[~mask[:, 0]]
+            return self.atoms[mask[:, 0]]
+
+        if (to == "ALL" and not invert) or (to == "ANY" and invert):
+            return self.atoms[mask.all(axis=1)]
+        return self.atoms[mask.any(axis=1)]
+
+    def _filter_num_col(
+        self,
+        value: float | list[int] | int,
+        num_col_name: str,
+        relation: str | None = None,
+        invert: bool = False,
+        epsilon: float | int = 0.01,
+        suppress_warning: bool = False,
+    ) -> Self:
+        """Generic function to do filter by a numerical column.
+
+        Args:
+            value (float|list[int]|int): value(s) to select by the column given by the 'num_col_name' input.
+            num_col_name (str): one of 'atom_number', 'residue_number', 'x_coord', 'y_coord', or 'z_coord',
+                'occupancy', 'b_factor', and 'nmr_model'. Note: the 'charge' column is not numerical by PDB format.
+            relation (str|None; defaults to None): 'x/y/z_coord' relationship to 'value'. It has to be one of '<', '<=',
+                '=', '>=', and '>'. If None, '<=' is used. Ignored if a list of integers are provided to `value`.
+            invert (bool; defaults to False): whether to invert the selection.
+            epsilon (float; defaults to 0.001): atoms |num_col_value - value| <= epsilon are selected
+                when invert=False and relation='='. Ignored if a list of integers are provided to `value`.
+            suppress_warning(bool; defaults to False): whether to suppress warnings.
+
+        Returns:
+            PdbDataFrame: sub DataFrame after the filtering
+
+        Raises:
+            ValueError: if xyz not in ['atom_number', 'residue_number', 'x_coord', 'y_coord', 'z_coord',
+                'occupancy', 'b_factor', 'nmr_model] or relation not in ['<', '<=', '=', '>=', '>'] when
+                selecting on float cols.
+        """  # noqa
+        allowed_num_col_names = [
+            "atom_number",
+            "residue_number",
+            "x_coord",
+            "y_coord",
+            "z_coord",
+            "occupancy",
+            "b_factor",
+            "nmr_model",
+        ]
+        if num_col_name not in allowed_num_col_names:
+            raise ValueError(
+                f"Only '{allowed_num_col_names}' are allowed in 'num_col_name' but {num_col_name} was put."
+            )
+
+        allowed_relations = ["<", "<=", "=", ">=", ">"]
+        if relation is None and not isinstance(value, list):
+            if isinstance(value, float):
+                relation = "<="
+            elif isinstance(value, int):
+                relation = "="
+            else:
+                raise ValueError(
+                    f"Only 'int', 'float', or 'list[int]' are allowed in 'value' but {type(value)} was put."
+                )
+        elif not isinstance(value, list) and relation not in allowed_relations:
+            raise ValueError(
+                f"Only '{allowed_relations}' are allowed in 'relation' but {relation} was put."
+            )
+        elif isinstance(value, list):
+            for v in value:
+                if not isinstance(v, int):
+                    raise ValueError(
+                        f"Only 'int', 'float', or 'list[int]' are allowed in 'value' but {type(v)} was in {value}."
+                    )
+            if relation is not None and not suppress_warning:
+                message = "'relation' is ignored when a list is provided to 'value'."
+                warnings.warn(
+                    message,
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+
+        if relation == "<":
+            if invert:
+                return self.atoms[self.atoms[num_col_name].values >= value]
+            return self.atoms[self.atoms[num_col_name].values < value]
+        elif relation == "<=":
+            if invert:
+                return self.atoms[self.atoms[num_col_name].values > value]
+            return self.atoms[self.atoms[num_col_name].values <= value]
+        elif relation == "=":
+            if invert:
+                return self.atoms[
+                    np.abs(self.atoms[num_col_name].values - value) >= epsilon
+                ]
+            return self.atoms[np.abs(self.atoms[num_col_name].values - value) < epsilon]
+        elif relation == ">=":
+            if invert:
+                return self.atoms[self.atoms[num_col_name].values < value]
+            return self.atoms[self.atoms[num_col_name].values >= value]
+        elif relation == ">":
+            if invert:
+                return self.atoms[self.atoms[num_col_name].values <= value]
+            return self.atoms[self.atoms[num_col_name].values > value]
+
+        # relation is None -> a list of numbers
+        if invert:
+            return self.atoms[~np.isin(self.atoms[num_col_name].values, value)]
+        return self.atoms[np.isin(self.atoms[num_col_name].values, value)]
+
+    @classmethod
+    def get_residues(cls, pdb_df: Self) -> list[tuple]:
         """Function to get the list of residues.
 
         Args:
@@ -545,29 +951,75 @@ class PdbDataFrame(pd.DataFrame):
         for chain, residue_name, residue_number in zip(
             pdb_df["chain_id"], pdb_df["residue_name"], pdb_df["residue_number"]
         ):
-            if residue_name.strip() not in AMINO_ACIDS:
+            if residue_name not in pdb_df.RESIDUE_CODES:
                 continue
-            residue = (chain.strip(), residue_name.strip(), residue_number)
+            residue = (chain, residue_name, residue_number)
             if len(all_residues) == 0:
                 all_residues.append(residue)
             elif residue != all_residues[-1]:
                 all_residues.append(residue)
         return all_residues
 
-    @staticmethod
+    @classmethod
     @functools.lru_cache()
-    def get_distance_matrix(pdb_df: PdbDataFrame, use_r2: bool = True) -> np.ndarray:
+    def get_distance_matrix(
+        cls,
+        pdb_df: Self,
+        other_data: Self | tuple | None = None,
+        use_r2: bool = True,
+        square_form: bool = False,
+    ) -> np.ndarray:
         """Function to calculate the distance matrix.
 
         Args:
-            pdb_df (PdbDataFrame): a PdbDataFrame object.
+            pdb_df1 (PdbDataFrame): a PdbDataFrame object.
+            other_data (tuple|PdbDataFrame|None; defaults to None): the second PdbDataFrame object.
             use_r2 (bool; defaults to True): whether to use r2 or r for distance matrix.
+            square_form (bool; defaults to False): whether to output a square form of the density matrix.
+                If two PdbDataFrames are different, square_form is ignored.
 
         Returns:
-            np.ndarray: distance matrix.
-        """
+            np.ndarray: distance matrix (squared or condensed form).
+
+        Raises:
+            ValueError: if 'other_data' is not of PdbDataFrame|tuple|None type or wrong shape if it is a tuple.
+        """  # noqa
         cols = ["x_coord", "y_coord", "z_coord"]
-        if use_r2:
-            return squareform(pdist(pdb_df[cols], "sqeuclidean"))
-        else:
-            return squareform(pdist(pdb_df[cols]))
+
+        if other_data is None or (
+            isinstance(other_data, cls)
+            and np.allclose(pdb_df.atoms[cols], other_data.atoms[cols])
+        ):
+            if not square_form:
+                if use_r2:
+                    return pdist(pdb_df.atoms[cols].values, "sqeuclidean")
+                return pdist(pdb_df.atoms[cols].values)
+            if use_r2:
+                return squareform(pdist(pdb_df.atoms[cols].values, "sqeuclidean"))
+            return squareform(pdist(pdb_df.atoms[cols].values))
+
+        elif isinstance(other_data, cls):
+            if use_r2:
+                return cdist(
+                    pdb_df.atoms[cols].values,
+                    other_data.atoms[cols].values,
+                    "sqeuclidean",
+                )
+            return cdist(
+                pdb_df.atoms[cols].values, other_data.atoms[cols].values, "euclidean"
+            )
+
+        elif isinstance(other_data, tuple):
+            other_array = np.asanyarray(other_data)
+            if other_array.shape != (3,):
+                if not (len(other_array.shape) == 2 and other_array.shape[1] == 3):
+                    raise ValueError(
+                        f"'other_data' expects a shape (N, 3) but {other_array.shape} is given."
+                    )
+            else:
+                other_array = other_array.reshape(1, 3)
+
+            if use_r2:
+                return cdist(pdb_df.atoms[cols].values, other_array, "sqeuclidean")
+            return cdist(pdb_df.atoms[cols].values, other_array, "euclidean")
+        raise ValueError("'other_data' type has to be tuple or PdbDataFrame or None.")
