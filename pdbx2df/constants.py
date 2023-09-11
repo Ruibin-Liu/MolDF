@@ -38,7 +38,8 @@ AMINO_ACIDS = {
 }
 
 # https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl
-# keep at most 3 digits of the average between the upper and lower bounds in the 'Standard Atomic Weight' column
+# keep at most 3 digits of the average between the upper and lower bounds
+# in the 'Standard Atomic Weight' column
 ELEMENT_MASSES = {
     "H": 1.008,
     "He": 4.003,
@@ -161,4 +162,5 @@ ELEMENT_MASSES = {
     "D": 2.01410177812,
     "T": 3.0160492779,
 }
-# No Standard Atomic Weight values from 'Am' onward; used averaged value of the Relative Atomic Mass instead.
+# No Standard Atomic Weight values from 'Am' onward;
+# used averaged value of the Relative Atomic Mass instead.
