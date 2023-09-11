@@ -22,7 +22,9 @@ pip install pdbx2df
 
 ## Usage examples
 
-1. If you want to read the 3D coordinates for PDB `1vii` into a Pandas DataFrame, and you have downloaded the `1vii.cif` file to your current working directory `./`, you can:
+### 1. PDBx file
+
+#### 1.1 If you want to read the 3D coordinates for PDB `1vii` into a Pandas DataFrame, and you have downloaded the `1vii.cif` file to your current working directory `./`, you can:
 
 ```python
 from pdbx2df import read_pdbx
@@ -32,7 +34,7 @@ atoms_df = pdbx['_atom_site']
 # 'atoms_df' is a Pandas DataFrame containing the '_atom_site' category which has the detailed 3D coordinates for each atom.
 ```
 
-2. If you want to read the FASTA sequence of `1vii`, you can:
+#### 1.2. If you want to read the FASTA sequence of `1vii`, you can:
 
 ```python
 from pdbx2df import read_pdbx
@@ -49,7 +51,7 @@ You can also put a Uniprot ID in the `pdb_id` keyword to get the AlphaFold2 file
 
 By default, the fetched content will be saved to a file named `<pdb_id>.cif` under the directory given by `pdbx_file_dir` (which by default is your current working directory). You can choose not to save the file by setting `save_pdbx_file=False` in the `read_pdbx` function calling.
 
-1. You can read them simutanously:
+#### 1.3. You can read them simutanously:
 
 ```python
 from pdbx2df import read_pdbx
@@ -61,7 +63,7 @@ fasta_df = pdbx['_entity_poly']
 
 Putting a list of category names to `category_names`, you will get them if they are in the PDBx file.
 
-4. You can parse the whole file by using 'all':
+#### 1.4. You can parse the whole file by using 'all':
 
 ```python
 from pdbx2df import read_pdbx
@@ -72,7 +74,7 @@ fasta_df = pdbx['_entity_poly']
 # and more
 ```
 
-5. Write back to a PDBx file:
+#### 1.5. Write back to a PDBx file:
 
 ```python
 from pdbx2df import read_pdbx, write_pdbx
@@ -82,8 +84,8 @@ keep = ['_atom_site', '_entity_poly']  # suppose we only want to keep the FASTA 
 pdbx_keep = {k: v for k, v in pdbx.items() if k in keep}
 write_pdbx(pdbx_keep, '1vii_save.cif')
 ```
-
-6. For reading the atomic information in a PDB file `1vii.pdb`:
+### 2. PDB file
+#### 2.1. For reading the atomic information in a PDB file `1vii.pdb`:
 
 ```python
 from pdbx2df import read_pdb
@@ -93,7 +95,7 @@ atoms_df = pdb['_atom_site']
 # 'atoms_df' is a Pandas DataFrame containing the '_atom_site' category which has the detailed 3D coordinates for each atom.
 ```
 
-7. Suppose we only want to keep the protein residue atoms in `5u8l.pdb`:
+#### 2.2. Suppose we only want to keep the protein residue atoms in `5u8l.pdb`:
 
 ```python
 from pdbx2df import read_pdb, write_pdb
@@ -114,4 +116,12 @@ The `write_pdb` function can write PDB files that can be parsed by `Chimera` by 
 
 Since our package can read from and write to PDB files containing NMR models, it is straightforward to read and write trajectory files saved as PDB files by molecular dynamics software, if different frames are surrounded by pairs of `MODEL` and `ENDMDL` lines.
 
-For reading `MOL2` files, check the [example in the tests folder](https://github.com/Ruibin-Liu/pdbx2df/blob/main/pdbx2df/read_mol2.py).
+### 3. MOL2 file
+#### For example, to read the `test.mol2` file in the `tests/test_files` folder in this repository:
+```python
+from pdbx2df import read_mol2
+mol2_file = './tests/test_files/test.mol2'
+mol2 = read_mol2(test_file)
+atoms_df = mol2['ATOM']  # The 'ATOM' category as a DataFrame.
+bonds_df = mol2['BOND']  # The 'BOND' category as a DataFrame.
+```
