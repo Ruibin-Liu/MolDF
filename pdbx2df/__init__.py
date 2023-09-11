@@ -12,7 +12,7 @@
 ### 2. Atom selection using dot syntax enabled by a DataFrame subclass: PDBDataFrame
 
 ### 3. Write a dictionary of Pandas DataFrames into mmCIF/PDB files.
-""" # noqa
+"""  # noqa
 from pdbx2df.constants import AMINO_ACIDS, ELEMENT_MASSES
 from pdbx2df.pdb_dataframe import PDBDataFrame
 from pdbx2df.read_mol2 import read_mol2

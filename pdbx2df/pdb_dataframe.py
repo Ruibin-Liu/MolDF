@@ -130,7 +130,9 @@ class PDBDataFrame(pd.DataFrame):
     @ELEMENT_MASSES.setter
     def ELEMENT_MASSES(self, element_masses: dict[str, float]):
         """Set the element mass dict."""
-        self._ELEMENT_MASSES = {e.upper().rjust(2): mass for e, mass in element_masses.items()}
+        self._ELEMENT_MASSES = {
+            e.upper().rjust(2): mass for e, mass in element_masses.items()
+        }
 
     @property
     def is_chimera(self) -> bool:
@@ -401,7 +403,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             PDBDataFrame: sub DataFrame after the filtering
-        """ # noqa
+        """  # noqa
         return self._filter_num_col(
             numbers, "atom_number", relation=relation, invert=invert
         )
@@ -577,7 +579,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             PDBDataFrame: sub DataFrame after the filtering
-        """ # noqa
+        """  # noqa
         return self._filter_num_col(
             value, "y_coord", relation=relation, invert=invert, epsilon=epsilon
         )
@@ -601,7 +603,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             PDBDataFrame: sub DataFrame after the filtering
-        """ # noqa
+        """  # noqa
         return self._filter_num_col(
             value, "z_coord", relation=relation, invert=invert, epsilon=epsilon
         )
@@ -625,7 +627,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             PDBDataFrame: sub DataFrame after the filtering
-        """ # noqa
+        """  # noqa
         return self._filter_num_col(
             value, "occupancy", relation=relation, invert=invert, epsilon=epsilon
         )
@@ -649,7 +651,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             PDBDataFrame: sub DataFrame after the filtering
-        """ # noqa
+        """  # noqa
         return self._filter_num_col(
             value, "b_factor", relation=relation, invert=invert, epsilon=epsilon
         )
@@ -993,8 +995,7 @@ class PDBDataFrame(pd.DataFrame):
         cols = ["x_coord", "y_coord", "z_coord"]
 
         if other_data is None or (
-            isinstance(other_data, cls)
-            and pdb_df.atoms == other_data.atoms
+            isinstance(other_data, cls) and pdb_df.atoms == other_data.atoms
         ):
             if not square_form:
                 if use_r2:
@@ -1019,7 +1020,7 @@ class PDBDataFrame(pd.DataFrame):
             other_array = np.asanyarray(other_data)
             if other_array.shape != (3,):
                 if not (len(other_array.shape) == 2 and other_array.shape[1] == 3):
-                    message =  "'other_data' expects a shape of (N, 3) or (3,) "
+                    message = "'other_data' expects a shape of (N, 3) or (3,) "
                     message += f"if given a tuple, but {other_array.shape} was given."
                     raise ValueError(message)
             else:

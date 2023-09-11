@@ -5,12 +5,13 @@
 """Tests for the PDBDataFrame class."""
 import os
 import sys
-import warnings
+
+import numpy as np  # type: ignore
 import pytest
-import numpy as np  # type ignore
-from pdbx2df.pdb_dataframe import PDBDataFrame, RESIDUE_CODES
-from pdbx2df.read_pdb import read_pdb
+
 from pdbx2df.constants import ELEMENT_MASSES
+from pdbx2df.pdb_dataframe import RESIDUE_CODES, PDBDataFrame
+from pdbx2df.read_pdb import read_pdb
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)
@@ -50,12 +51,13 @@ def test_hash_eq():
     df = pdb["_atom_site"]
     pdb_df = PDBDataFrame(df)
     with pytest.raises(TypeError) as exception_info:
-        df == pdb_df
+        assert df == pdb_df
     assert (
         str(exception_info.value) == "'NoneType' object is not callable"
     ), "Compared to non-directly-comparable plain DataFrame."
 
-    assert pdb_df == pdb_df, "Can not compare with same type."
+    pdb_df2 = pdb_df.copy()
+    assert pdb_df == pdb_df2, "Can not compare with same type."
 
 
 def test_property_getter():
