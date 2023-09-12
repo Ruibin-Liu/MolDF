@@ -31,7 +31,7 @@ def test_split_line():
     # Test '' and "" both used as quotes
     line = """
     DA  'DNA linking'       y "2'-DEOXYADENOSINE-5'-MONOPHOSPHATE" ? 'C10 H14 N5 O6 P' 331.222
-    """
+    """  # noqa
     expected = [
         "DA",
         "DNA linking",

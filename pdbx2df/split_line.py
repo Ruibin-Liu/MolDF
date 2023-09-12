@@ -20,7 +20,7 @@ def split_line(line: str, delimiter: str | None = None) -> list:
     if not delimiter:
         delimiter = " "
     words = []
-    # wihtout quotes, using shlex
+    # without quotes, using shlex
     if '"' not in line and "'" not in line:
         if delimiter == " ":
             return line.split()
