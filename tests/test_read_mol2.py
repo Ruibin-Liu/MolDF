@@ -34,7 +34,7 @@ def test_read_mol2():
     # Not implemented
     message = """Only ATOM, MOLECULE, BOND categories are implemented for the MOL2 format.
                 Create an issue at https://github.com/Ruibin-Liu/pdbx2df if
-                you want the ANCHOR_ATOM category implemented.
+                you want the ANCHOR_ATOM category to be implemented.
                 """
     with pytest.raises(NotImplementedError) as error_msg:
         _ = read_mol2(test_file, category_names=["ANCHOR_ATOM"])

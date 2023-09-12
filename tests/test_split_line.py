@@ -53,7 +53,7 @@ def test_split_line():
     expected = ["This", "is", "a", "test"]
     assert split_line(line) == expected
 
-    # Test ending with multiple delimeter
+    # Test ending with multiple delimiter
     line = "This is a test    "
     expected = ["This", "is", "a", "test"]
     assert split_line(line) == expected
@@ -73,7 +73,7 @@ def test_split_line():
         assert split_line(line)
     assert str(e.value) == "Bad line: quotes not paired!"
 
-    # Test , as delimeter
+    # Test , as delimiter
     line = 'This,is,  a,"test"'
     expected = ["This", "is", "  a", "test"]
-    assert split_line(line, delimeter=",") == expected
+    assert split_line(line, delimiter=",") == expected

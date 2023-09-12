@@ -25,19 +25,22 @@ def read_pdbx(
     pdbx_file_dir: str | os.PathLike | None = None,
     category_names: list | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """
-    Read a pdbx file's categories into a dict of Pandas DataFrames.
+    """Reads a `.cif` file's categories into a `dict` of `Pandas DataFrame`s.
 
     Args:
-        pdb_id (str|None; defaults to None): PDB/Uniprot ID. Required if pdbx_file is None.
-        pdbx_file (str|os.PathLike[str]|None; defaults to None): file name for a PDBx/mmCIF file. Used over pdb_id.
-        category_names (list|None; defaults to None): a list of names for the categories in the mmCIF file format.
-            If None, "all" is used and all categories will be processed.
-        save_pdbx_file(bool; defaults to True): whether to save the fetched PDBx file to pdbx_file_dir.
-        pdbx_file_dir(str|os.PathLike|None; defaults to None): directory to save fetched PDBx files.
+        `pdb_id` (`str|None`; defaults to `None`): PDB/Uniprot ID. Required if `pdbx_file` is `None`.
+
+        `pdbx_file` (`str|os.PathLike[str]|None`; defaults to `None`): file name for a PDBx/mmCIF file. Used over `pdb_id`.
+
+        `category_names` (`list|None`; defaults to `None`): a list of names for the categories in the mmCIF file format.
+            If `None`, `"all"` is used and all categories will be processed.
+
+        `save_pdbx_file` (`bool`; defaults to `True`): whether to save the fetched PDBx file to `pdbx_file_dir`.
+
+        `pdbx_file_dir` (`str|os.PathLike|None`; defaults to `None`): directory to save fetched PDBx files.
 
     Returns:
-        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        `dict[str, pd.DataFrame]`: A dict of {`category_name`: `pd.DataFrame` of the info belongs to the category}
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if pdb_id is None and pdbx_file is None:

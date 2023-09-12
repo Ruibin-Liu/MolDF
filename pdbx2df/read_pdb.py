@@ -32,25 +32,39 @@ def read_pdb(
     allow_chimera: bool = True,
     need_ter_lines: bool = True,
 ) -> dict[str, pd.DataFrame]:
-    """
-    Read a pdb file's categories into a dict of Pandas DataFrames.
+    """Reads a `.pdb` file's categories into a `dict` of `Pandas DataFrame`s.
 
     Args:
-        pdb_id (str|None; defaults to None): PDB/Uniprot ID. Required if pdb_file is None.
-        pdb_file (str|os.PathLike[str]|None; defaults to None): file name for a PDB file. Used over pdb_id.
-        category_names (list|None; defaults to None): a list of names for the categories as to the mmCIF file format.
-            If None, "_atom_site" is used.
+        `pdb_id` (`str|None`; defaults to `None`): PDB/Uniprot ID. Required if `pdb_file` is `None`.
+
+        `pdb_file` (`str|os.PathLike[str]|None`; defaults to `None`): file name for a PDB file. Used over `pdb_id`.
+
+        `category_names` (`list|None`; defaults to `None`): a list of names for the categories as to the mmCIF file format.
+            If None, `'_atom_site'` is used.
             To be consistent with the PDBx file format, the following category names are used to refer
             to block(s) in a PDB file and only they are supported:
-            1. _atom_site: 'ATOM', 'HETATM', and 'TER' lines
-            2. TBD
-        save_pdb_file(bool; defaults to True): whether to save the fetched PDB file to pdb_file_dir.
-        pdb_file_dir(str|os.PathLike|None; defaults to None): directory to save fetched PDB files.
-        allow_chimera (bool; defaults to True): whether to allow Chimera-formatted PDB files.
-        need_ter_lines (bool; defaults to True): whether to read the TER lines into the DataFrame.
+
+            1. `'_atom_site'`: `ATOM`, `HETATM`, and `TER` lines and possible `NUMMDL`, `MODEL`, and `ENDMDL` lines.
+
+            2. `'_seq_res'`: `SEQRES` lines.
+
+        `save_pdb_file`(`bool`; defaults to `True`): whether to save the fetched PDB file to `pdb_file_dir`.
+
+        `pdb_file_dir`(`str|os.PathLike|None`; defaults to `None`): directory to save fetched PDB files.
+
+        `allow_chimera` (`bool`; defaults to `True`): whether to allow Chimera-formatted PDB files.
+
+        `need_ter_lines` (`bool`; defaults to `True`): whether to read the `TER` lines into the `DataFrame`.
 
     Returns:
-        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        `dict[str, pd.DataFrame]`: A `dict` of {`category_name`: `pd.DataFrame` of the info belongs to the category}
+
+    Raises:
+        `ValueError`: `pdb_id` and `pdb_file` are both missing; cannot download `pdb_file` from RCSB if `pdb_id` is given;
+
+        `NotImplementedError`: if `category_names` not a subset of [`'_atom_site'`, `'_seq_res'`].
+
+        `FileNotFoundError`: `pdb_file` not found in the provided path.
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if pdb_id is None and pdb_file is None:
@@ -227,17 +241,20 @@ def _split_atom_line(
     allow_chimera: bool = True,
     is_ter_line: bool = False,
 ) -> tuple:
-    """Internal function to parse a single line belonging to 'ATOM', 'HETATM', or 'TER' lines
+    """Internal function to parse a single line belonging to `ATOM`, `HETATM`, or `TER` lines.
 
     Args:
-        line (str): A 'ATOM', 'HETATM', or 'TER' line.
-        nmr_model (int; defaults to -1): the NMR model number for the line; default -1 means not an NMR model
-        allow_chimera (bool; defaults to True): try to parse as a Chimera-formatted PDB file.
-        is_ter_line (bool; defaults to False): whether the line starts with 'TER'.
+        `line` (`str`): A `ATOM`, `HETATM`, or `TER` line.
+
+        `nmr_model` (`int`; defaults to `-1`): the NMR model number for the line; default `-1` means not an NMR model.
+
+        `allow_chimera` (`bool`; defaults to `True`): try to parse as a Chimera-formatted PDB file.
+
+        `is_ter_line` (`bool`; defaults to `False`): whether the line starts with `TER`.
 
     Returns:
-        tuple: parsed values
-    """
+        `tuple`: parsed values.
+    """  # noqa
     if not (is_ter_line or allow_chimera):
         return (
             line[0:6],

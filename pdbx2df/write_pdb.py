@@ -22,22 +22,29 @@ def write_pdb(
     file_name: str | os.PathLike | None = None,
     allow_chimera: bool = False,
 ) -> None:
-    """Write a dict of Pandas DataFrames into a PDB file.
+    """Write a dict of `Pandas DataFrame`s into a PDB file.
 
     Args:
-        pdb (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str|os.PathLike|None; defaults to None): file name to write a PDB file.
-            If None, "pdbx2df_output.pdb" will be used as the file name.
-        allow_chimera (bool; defaults to False): whether to allow writing to Chimera-formatted PDB files.
+        `pdb` (`dict[str, pd.DataFrame]`): a `dict` of `Pandas DataFrame`s to write.
+
+        `file_name` (`str|os.PathLike|None`; defaults to `None`): file name to write a PDB file.
+            If `None`, `pdbx2df_output.pdb` will be used as the file name.
+
+        `allow_chimera` (`bool`; defaults to `False`): whether to allow writing to Chimera-formatted PDB files.
 
     Returns:
-        None
+        `None`
+
+    Raises:
+        `TypeError`: if `pdb` is not a `dict` of {`str`: `pd.DataFrame`}.
+
+        `ValueError`: if the `pdb` contains other than `'_atom_site'` categories (for now).
     """  # noqa
     if not file_name:
         file_name = "pdbx2df_output.pdb"
 
     if not isinstance(pdb, dict):
-        raise TypeError(f"pdb has to be a dict but {type(pdb)} is providied.")
+        raise TypeError(f"pdb has to be a dict but {type(pdb)} is provided.")
 
     implemented = ", ".join(IMPLEMENTED_PDB_CATS)
     for key in pdb.keys():
@@ -113,18 +120,18 @@ def write_pdb(
                 if allow_chimera:
                     if len(record_name) == 6:
                         warnings.warn(
-                            f"Record name {record_name} length was 6 and is truncated to {record_name[:-1]}",
+                            f"Record name {record_name} length was 6 and is truncated to {record_name[:-1]}",  # noqa
                             RuntimeWarning,
                             stacklevel=2,
                         )
                         record_name = record_name[:-1]
-                    atom_site_line = f"{record_name:<5s}{atom_number:>6d} {atom_name:<4s}{alt_loc:<1s}"
+                    atom_site_line = f"{record_name:<5s}{atom_number:>6d} {atom_name:<4s}{alt_loc:<1s}"  # noqa
                     if len(residue_name) < 4:
                         residue_name = residue_name + " "
-                    atom_site_line += f"{residue_name:>4s}{chain_id:<1s}{residue_number:>4d}{insertion:<1s}   "
+                    atom_site_line += f"{residue_name:>4s}{chain_id:<1s}{residue_number:>4d}{insertion:<1s}   "  # noqa
                 else:
-                    atom_site_line = f"{record_name:<6s}{atom_number:>5d} {atom_name:<4s}{alt_loc:<1s}"
-                    atom_site_line += f"{residue_name:>3s} {chain_id:<1s}{residue_number:>4d}{insertion:<1s}   "
+                    atom_site_line = f"{record_name:<6s}{atom_number:>5d} {atom_name:<4s}{alt_loc:<1s}"  # noqa
+                    atom_site_line += f"{residue_name:>3s} {chain_id:<1s}{residue_number:>4d}{insertion:<1s}   "  # noqa
                 if np.isnan(x_coord):
                     x_coord_e, y_coord_e, z_coord_e, occupancy_e, b_factor_e = (
                         " ",
@@ -133,18 +140,13 @@ def write_pdb(
                         " ",
                         " ",
                     )
-                    atom_site_line += f"{x_coord_e:>8s}{y_coord_e:>8s}{z_coord_e:>8s}{occupancy_e:>6s}"
-                    atom_site_line += f"{b_factor_e:>6s}      {segment_id:<4s}{element_symbol:>2s}{charge:>2s}\n"
+                    atom_site_line += f"{x_coord_e:>8s}{y_coord_e:>8s}{z_coord_e:>8s}{occupancy_e:>6s}"  # noqa
+                    atom_site_line += f"{b_factor_e:>6s}      {segment_id:<4s}{element_symbol:>2s}{charge:>2s}\n"  # noqa
                 else:
                     atom_site_line += (
                         f"{x_coord:8.3f}{y_coord:8.3f}{z_coord:8.3f}{occupancy:6.2f}"
                     )
-                    atom_site_line += f"{b_factor:6.2f}      {segment_id:<4s}{element_symbol:>2s}{charge:>2s}\n"
-                if len(atom_site_line) != 81:
-                    print({i + 1: c for i, c in enumerate(atom_site_line)})
-                    raise ValueError(
-                        f"Atom site line length is {len(atom_site_line) -1 } not 80."
-                    )
+                    atom_site_line += f"{b_factor:6.2f}      {segment_id:<4s}{element_symbol:>2s}{charge:>2s}\n"  # noqa
                 out_file.write(atom_site_line)
             if n_nmr_models > 0:
                 out_file.write(f"ENDMDL{padding:>74}\n")

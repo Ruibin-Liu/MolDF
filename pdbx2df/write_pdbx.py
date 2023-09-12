@@ -15,16 +15,18 @@ import pandas as pd  # type: ignore
 def write_pdbx(
     pdbx: dict[str, pd.DataFrame], file_name: str | os.PathLike | None = None
 ) -> None:
-    """
-    Write a dict of Pandas DataFrames into a PDBx file.
+    """Writes a `dict` of `Pandas DataFrame`s into a PDBx file.
 
     Args:
-        pdbx (dict[str, pd.DataFrame]): a dict of Pandas DataFrames to write.
-        file_name (str|os.PathLike|None; defaults to None): file name to write a PDBx file.
-            If None, "pdbx2df_output.cif" will be used as the file name.
+        `pdbx` (`dict[str, pd.DataFrame]`): a `dict` of `Pandas DataFrame`s to write.
+        `file_name` (`str|os.PathLike|None`; defaults to `None`): file name to write a PDBx file.
+            If `None`, `pdbx2df_output.cif` will be used as the file name.
 
     Returns:
-        None
+        `None`
+
+    Raises:
+        `TypeError`: if `pdbx` is not a `dict` of {`str`: `pd.DataFrame`}.
     """  # noqa
     if not file_name:
         file_name = "pdbx2df_output.cif"
@@ -36,7 +38,7 @@ def write_pdbx(
     for category_name, records in pdbx.items():
         if not isinstance(records, pd.DataFrame):
             raise TypeError(
-                f"pdbx values have to be Pandas DataFrames but {category_name} is a {type(records)}."
+                f"pdbx values have to be Pandas DataFrames but {category_name} is a {type(records)}."  # noqa
             )
         if len(records) > 1:
             multi_record[category_name] = True

@@ -6,26 +6,25 @@
 from __future__ import annotations
 
 
-def split_line(line: str, delimeter: str | None = None) -> list:
-    """
-    Split a string line into tokens separated by delimeters, assuming all ' and " in the start character
-    or following a delimeter are paired to quote a token.
+def split_line(line: str, delimiter: str | None = None) -> list:
+    """Splits a string line into tokens separated by `delimiter`s, assuming all `'` and `"` in the start character
+    or following a `delimiter` are paired to quote a token.
 
     Args:
-        line (str): line as a string
-        delimeter (str|None; defaults to None): delimeter to split the line; if None, delimeter == ' '.
+        `line` (`str`): line as a string
+        `delimiter` (`str|None`; defaults to `None`): `delimiter` to split the line; if `None`, `delimiter` == `' '`.
 
     Returns:
         A list of tokens: words
     """  # noqa
-    if not delimeter:
-        delimeter = " "
+    if not delimiter:
+        delimiter = " "
     words = []
     # wihtout quotes, using shlex
     if '"' not in line and "'" not in line:
-        if delimeter == " ":
+        if delimiter == " ":
             return line.split()
-        return line.split(delimeter)
+        return line.split(delimiter)
 
     # with quotes
     single_start = False
@@ -37,7 +36,7 @@ def split_line(line: str, delimeter: str | None = None) -> list:
             single_start = True
         elif (
             char == "'"
-            and line[i - 1] == delimeter
+            and line[i - 1] == delimiter
             and not double_start
             and not single_start
         ):  # a new part quoted with '
@@ -49,7 +48,7 @@ def split_line(line: str, delimeter: str | None = None) -> list:
             double_start = True
         elif (
             char == '"'
-            and line[i - 1] == delimeter
+            and line[i - 1] == delimiter
             and not double_start
             and not single_start
         ):  # a new part quoted with "
@@ -57,7 +56,7 @@ def split_line(line: str, delimeter: str | None = None) -> list:
         elif char == '"' and double_start:  # a part quoted with " ended
             double_start = False  # reset
         elif (
-            char in [delimeter, "\n", "\r"] and not single_start and not double_start
+            char in [delimiter, "\n", "\r"] and not single_start and not double_start
         ):  # a part not quoted ended
             if tmp:
                 words.append("".join(tmp))
@@ -66,7 +65,7 @@ def split_line(line: str, delimeter: str | None = None) -> list:
             tmp.append(char)
         if (
             tmp and i == len(line) - 1
-        ):  # in case no '\r', '\n', or delimeter is at the end
+        ):  # in case no '\r', '\n', or delimiter is at the end
             words.append("".join(tmp))
     if single_start or double_start:
         raise ValueError("Bad line: quotes not paired!")

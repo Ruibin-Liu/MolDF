@@ -38,16 +38,19 @@ def read_mol2(
     mol2_file: str | os.PathLike,
     category_names: list | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """
-    Read a mol2 file's categories into a dict of Pandas DataFrames.
+    """Reads a `.mol2` file's categories into a `dict` of `Pandas DataFrame`s.
 
     Args:
-        mol2_file (str|os.PathLike): file name for a PDB file.
-        category_names (list|None; defaults to None): a list of names for the categories as to the .mol2 file format.
-            If None, ["ATOM", "MOLECULE", "BOND"] is used.
+        `mol2_file` (`str|os.PathLike`): file name for a PDB file.
+
+        `category_names` (`list|None`; defaults to `None`): a list of names for the categories as to the `.mol2` file format.
+            If `None`, [`'ATOM'`, `'MOLECULE'`, `'BOND'`] is used.
 
     Returns:
-        dict[str, pd.DataFrame]: A dict of {category_name: pd.DataFrame of the info belongs to the category}
+        `dict[str, pd.DataFrame]`: A dict of {`category_name`: `pd.DataFrame` of the info belongs to the category}
+
+    Raises:
+        `NotImplementedError`: if `category_names` not a subset of [`'ATOM'`, `'MOLECULE'`, `'BOND'`]
     """  # noqa
     data: dict[str, pd.DataFrame] = {}
     if category_names is None:
@@ -58,7 +61,7 @@ def read_mol2(
             raise NotImplementedError(
                 f"""Only {implemented} categories are implemented for the MOL2 format.
                 Create an issue at https://github.com/Ruibin-Liu/pdbx2df if
-                you want the {category_name} category implemented.
+                you want the {category_name} category to be implemented.
                 """
             )
         data[category_name] = pd.DataFrame()
@@ -109,14 +112,14 @@ def read_mol2(
 
 
 def _get_molecule_df(molecule_lines: list) -> pd.DataFrame:
-    """Turn the 'MOLECULE' lines into a Pandas DataFrame.
+    """Turns the `MOLECULE` lines into a `Pandas DataFrame`.
 
     Args:
-        molecule_lines (list): a list of tuples corresponding to each line's content.
+        `molecule_lines` (`list`): a list of tuples corresponding to each line's content.
 
     Returns:
-        pd.DataFrame: the 'MOLECULE' category as a Pandas DataFrame
-    """
+        `pd.DataFrame`: the `MOLECULE` category as a `Pandas DataFrame`
+    """  # noqa
     molecule_attrs: dict[str, list[str] | list[int]] = {}
     line_0 = {"mol_name": [" ".join(molecule_lines[0])]}
     line_1_names = ["num_atoms", "num_bonds", "num_subst", "num_feat", "num_sets"]
@@ -137,15 +140,15 @@ def _get_molecule_df(molecule_lines: list) -> pd.DataFrame:
 
 
 def _set_atom_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
-    """Set the data types for the 'ATOM' category
+    """Sets the data types for the `ATOM` category.
 
     Args:
-        data_df (pd.DataFrame): original Pandas DataFrame for the 'ATOM' category with all strings.
+        `data_df` (`pd.DataFrame`): original `Pandas DataFrame` for the `ATOM` category with all strings.
 
     Returns:
-        pd.DataFrame: the 'ATOM' Pandas DataFrame dtypes corrected for 'atom_id', 'x', 'y', 'z',
-            ['subst_id', ['charge']].
-    """
+        `pd.DataFrame`: the `ATOM` `Pandas DataFrame` dtypes corrected for `'atom_id'`, `'x'`, `'y'`, `'z'`,
+           and possibly [`'subst_id'`, [`'charge'`]] columns.
+    """  # noqa
     data_df[["atom_id", "x", "y", "z"]] = data_df[["atom_id", "x", "y", "z"]].astype(
         {"atom_id": "int32", "x": "float32", "y": "float32", "z": "float32"}
     )
@@ -158,14 +161,14 @@ def _set_atom_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _set_bond_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
-    """Set the data types for the 'BOND' category
+    """Sets the data types for the `BOND` category
 
     Args:
-        data_df (pd.DataFrame): original Pandas DataFrame for the 'BOND' category with all strings.
+        `data_df` (`pd.DataFrame`): original `Pandas DataFrame` for the `BOND` category with all strings.
 
     Returns:
-        pd.DataFrame: dtypes corrected for 'bond_id', 'origin_atom_id', 'target_atom_id'.
-    """
+        `pd.DataFrame`: dtypes corrected for `'bond_id'`, `'origin_atom_id'`, and `'target_atom_id'` columns.
+    """  # noqa
     data_df[["bond_id", "origin_atom_id", "target_atom_id"]] = data_df[
         ["bond_id", "origin_atom_id", "target_atom_id"]
     ].astype({"bond_id": "int32", "origin_atom_id": "int32", "target_atom_id": "int32"})
