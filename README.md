@@ -1,5 +1,10 @@
 # pdbx2df
 
+![Tests](https://github.com/Ruibin-Liu/pdbx2df/actions/workflows/tests.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/pdbx2df/badge/?version=latest)](https://pdbx2df.readthedocs.io/en/latest/?badge=latest)
+![Python](https://img.shields.io/badge/python-3.7-blue.svg)
+[![PyPI version](https://badge.fury.io/py/pdbx2df.svg)](https://badge.fury.io/py/pdbx2df)
+
 Many file formats are about different ways of integrating structured data blocks into a single file in that those blocks are related to each other in some way. The `PDBx` or `mmCIF` file format organizes structural biology data into `categories` and each category contains a structured data block which includes several `attributes`, and each attribute contains the same number of elements within a category. Those characteristics make a PDBx/mmCIF file naturally to be representable as a `Python dict` of `Pandas DataFrames`.
 
 Our `pdbx2df` package primarily parses a PDBx file (mmCIF file: <pdb_id>.cif) into a Python dict with PDBx category names as keys and contents belonging to the category as the corresponding values. Each category content is parsed as a Pandas DataFrame whose columns are the attribute names. On the other hand, we can write a dict of Pandas DataFrame(s) into a PDBx format in which the dict key(s) are used as category names, the DataFrame column names as attribute names, and the DataFrame row(s) as the corresponding record(s).
