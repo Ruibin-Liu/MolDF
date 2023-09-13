@@ -963,6 +963,7 @@ class PDBDataFrame(pd.DataFrame):
                     message += f"but {type(v)} was in {value}."
                     raise ValueError(message)
             if relation is not None and not suppress_warning:
+                relation = None
                 message = "'relation' is ignored when a list is provided to 'value'."
                 warnings.warn(
                     message,
