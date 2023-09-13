@@ -17,6 +17,7 @@ version = "0.6.2"
 extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.doctest",
+    "sphinx_copybutton",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
