@@ -2,7 +2,13 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""PDB format writing."""
+"""PDB format writing.
+
+Write a dict of ``Pandas DataFrame`` back to a PDB file.
+
+Currently, only the ``_atom_site`` category can be written back.
+
+"""
 from __future__ import annotations
 
 import os
@@ -15,6 +21,7 @@ import pandas as pd  # type: ignore
 from .version import __version__ as pdbx2df_version
 
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
+"""PDB categories that are currently implemented."""
 
 
 def write_pdb(
@@ -22,24 +29,23 @@ def write_pdb(
     file_name: str | os.PathLike | None = None,
     allow_chimera: bool = False,
 ) -> None:
-    """Write a dict of `Pandas DataFrame`s into a PDB file.
+    """Write a dict of ``Pandas DataFrame`` s into a PDB file.
 
     Args:
-        `pdb` (`dict[str, pd.DataFrame]`): a `dict` of `Pandas DataFrame`s to write.
+        pdb (required): a ``dict`` of ``Pandas DataFrame`` s to write.
 
-        `file_name` (`str|os.PathLike|None`; defaults to `None`): file name to write a PDB file.
-            If `None`, `pdbx2df_output.pdb` will be used as the file name.
+        file_name (optional): file name to write a PDB file. If ``None``,
+            ``pdbx2df_output.pdb`` will be used as the file name.
+            Defaults to **None**.
 
-        `allow_chimera` (`bool`; defaults to `False`): whether to allow writing to Chimera-formatted PDB files.
-
-    Returns:
-        `None`
+        allow_chimera (optional): whether to allow writing to Chimera-formatted PDB
+            files. Defaults to **False**.
 
     Raises:
-        `TypeError`: if `pdb` is not a `dict` of {`str`: `pd.DataFrame`}.
+        TypeError: if ``pdb`` is not a valid dict of ``DataFrame``.
 
-        `ValueError`: if the `pdb` contains other than `'_atom_site'` categories (for now).
-    """  # noqa
+        ValueError: if the ``pdb`` contains other than supported categories.
+    """
     if not file_name:
         file_name = "pdbx2df_output.pdb"
 

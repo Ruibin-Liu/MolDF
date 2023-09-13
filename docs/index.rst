@@ -1,25 +1,22 @@
+.. pdbx2df documentation master file, created by
+   sphinx-quickstart on Tue Sep 12 16:39:04 2023.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
 Welcome to pdbx2df's documentation!
 ===================================
 
-**pdbx2df** is a Python library for working on :ref:`PDBX`/:ref:`PDB`/:ref:`MOL2` files based on Pandas DataFrame.
-
-It is written purely in python, using only the common data science libraries: `Pandas`, `Numpy`, and `Scipy`.
-It is lightweight, fast, and pythonic.
-
-Check out the :doc:`install` section for how to :ref:`installation` , the :doc:`usage` section for how to read and write the
-aforementioned files, and the  :doc:`api` section for more details..
-
-.. note::
-
-   This project is under active development.
-
-Contents
---------
-
 .. toctree::
-    :maxdepth: 2
-    :caption: Contents
+   :maxdepth: 2
+   :caption: Contents
 
+   self
    install
    usage
-   api
+   pdbx2df
+
+Indices and tables
+==================
+
+* :ref:`modindex`
+* :ref:`search`

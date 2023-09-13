@@ -4,17 +4,13 @@ Quick Start
 
 .. _PDB:
 
-1. Working with PDB files
--------------------------
+1. Read PDB files
+-----------------
 
 To read a PDB file, you can use  ``pdbx2df.read_pdb()`` function:
 
-.. autofunction:: pdbx2df.read_pdb
-
-One of the ``pdb_file`` and ``pdb_id`` parameters should be given. Otherwise, :py:func:`pdbx2df.read_pdb`
+One of the ``pdb_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdb``
 will raise an exception. If ``pdb_file`` is given, ``pdb_id`` is ignored.
-
-.. autoexception:: ValueError
 
 For example:
 
@@ -39,19 +35,24 @@ If you have a local PDB file ``test.pdb`` under your current directory. You can 
 
    >>> pdb = read_pdb(pdb_file='test.pdb')
 
+.. _PDBDataFrame:
+
+2. Selecting atoms using PDBDataFrame
+-------------------------------------
+
+To
+
 .. _PDBX:
 
-2. Working with mmCIF/PDBx files
---------------------------------
+3. Read mmCIF/PDBx files
+------------------------
 
 To read a PDBx file, you can use  ``pdbx2df.read_pdbx()`` function:
 
-.. autofunction:: pdbx2df.read_pdbx
 
-One of the ``pdbx_file`` and ``pdb_id`` parameters should be given. Otherwise, :py:func:`pdbx2df.read_pdbx`
+One of the ``pdbx_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdbx``
 will raise an exception. If ``pdbx_file`` is given, ``pdb_id`` is ignored.
 
-.. autoexception:: ValueError
 
 For example:
 
@@ -89,12 +90,10 @@ Similarly to the ``read_pdb`` case, you can read a local ``test.cif`` file as we
 
 .. _MOL2:
 
-3. Working with MOL2 files
---------------------------
+4. Read MOL2 files
+------------------
 
 To read a Tripos MOL2 file, you can use  ``pdbx2df.read_mol2()`` function:
-
-.. autofunction:: pdbx2df.read_mol2
 
 Let's download an example MOL2 file from LigandBox first. The ligand is D00217_.
 
