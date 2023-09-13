@@ -71,6 +71,14 @@ Contents
    usage
    pdbx2df
 
+
+.. toctree::
+   :caption: Project Links
+   :hidden:
+
+   PyPI page <https://pypi.org/project/pdbx2df>
+   GitHub Repository <https://github.com/Ruibin-Liu/pdbx2df>
+
 Indices and tables
 ==================
 
