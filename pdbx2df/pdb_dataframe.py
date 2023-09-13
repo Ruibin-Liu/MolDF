@@ -1019,14 +1019,16 @@ class PDBDataFrame(pd.DataFrame):
                     message = "Only 'int' is allowed in 'value' if it is a list, "
                     message += f"but {type(v)} was in {value}."
                     raise ValueError(message)
-            if relation is not None and not suppress_warning:
+            if relation is not None:
                 relation = None
-                message = "'relation' is ignored when a list is provided to 'value'."
-                warnings.warn(
-                    message,
-                    RuntimeWarning,
-                    stacklevel=2,
-                )
+                if not suppress_warning:
+                    message = "'relation' is ignored "
+                    message += "when a list is provided to 'value'."
+                    warnings.warn(
+                        message,
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
 
         if relation == "<":
             if invert:
