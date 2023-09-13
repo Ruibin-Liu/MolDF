@@ -35,12 +35,74 @@ If you have a local PDB file ``test.pdb`` under your current directory. You can 
 
    >>> pdb = read_pdb(pdb_file='test.pdb')
 
-.. _PDBDataFrame:
+.. _PDBDataFrame_QS:
 
-2. Selecting atoms using PDBDataFrame
+2. Select atoms using PDBDataFrame
 -------------------------------------
 
-To
+To select rows in the ``_atom_site`` ``DataFrame``, we can of course just use standard filter operations in ``Pandas``.
+
+.. code-block:: python3
+
+   >>> pdb_df = pdb['_atom_site']
+   >>> ca_atoms = pdb_df[(pdb_df.atom_name.str.strip().isin(['CA'])) & (pdb_df.element_symbol.str.strip().isin(['C']))]
+
+But it obvious to see the cumbersomeness and error-proneness when we need more complex selection. And it should be noted
+that the ``element_symbol`` is necessary because only using ``atom_name`` could give out a ``DataFrame`` containing calcium
+atoms if there is any, because calcium atoms also have ``atom_name`` as ``CA``.
+
+Instead, we should use the selection language implemented in the :ref:`PDBDataFrame <PDBDataFrame>` ``class``. For the same selection,
+it is simply:
+
+.. code-block:: python3
+
+   >>> pdb_df = pdb['_atom_site']
+   >>> ca_atoms = pdb_df.ca_atoms
+
+Or equally,
+
+.. code-block:: python3
+
+   >>> pdb_df = pdb['_atom_site']
+   >>> ca_atoms = pdb_df.atom_names(['CA'])
+
+The first method uses the build-in ``ca_atoms`` python ``property`` so that we could use the ``.`` syntax. Check the :ref:`PDBDataFrame <PDBDataFrame>` ``class``
+documentation for other convenient properties.
+
+The build-in properties are convenient but not so flexible nor powerful. The second method is much more flexible that we can select atoms providing a
+list of ``atom_name`` s to the ``atom_names`` method. We can invert the selection by:
+
+.. code-block:: python3
+
+   >>> not_ca_atoms = pdb_df.atom_names(['CA'], invert=True)
+
+All columns in the ``PDBDataFrame`` are supported for such a language, simply by use the plural form of the column names as methods for selecting
+the corresponding columns. Another example,
+
+.. code-block:: python3
+
+   >>> x_coord_larger_than_zero = pdb_df.x_coords(0, relation='>') # all atoms whose 'x_coord' > 0
+
+Here it shows we can use the ``relation`` keywords to control the relationship between the variable and the reference value if it's a numerical column
+like `x_coord` or `atom_number` etc.
+
+Selection based on ``distance`` can be done through the ``distances`` method.
+
+.. code-block:: python3
+
+   >>> close_to_origin = pdb_df.distances([0.0, 0.0, 0.0], cut_off=10.0, relation='<=')
+
+which gives us all atoms within 10.0 Å of the point [0.0, 0.0, 0.0].
+
+
+Even more, we can chain and make arbitrary combinations of them to get very complex selections.
+
+.. code-block:: python3
+
+   >>> complex_selection = pdb_df.chain_ids(['A']).backbone.atom_names(['N']).residue_names(['Lys', 'His', 'Arg']).distances([0.0, 0.0, 0.0], cut_off=10.0, relation='<=')
+
+which gives us all the nitrogen atoms in the backbone of Lys, His, and Arg residues of 1vii's chain A that are within 10.0 Å of the origin point.
+For such a selection, using vanilla ``Pandas`` filter language can be very frustrating.
 
 .. _PDBX:
 

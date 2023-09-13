@@ -24,7 +24,7 @@ MOL2 Reader
 
 PDBDataFrame Class
 -----------------------------
-
+.. _PDBDataFrame:
 .. automodule:: pdbx2df.pdb_dataframe
    :members:
    :private-members:
