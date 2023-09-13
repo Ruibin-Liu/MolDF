@@ -7,16 +7,19 @@ from __future__ import annotations
 
 
 def split_line(line: str, delimiter: str | None = None) -> list:
-    """Splits a string line into tokens separated by `delimiter`s, assuming all `'` and `"` in the start character
-    or following a `delimiter` are paired to quote a token.
+    """Splits a string line into tokens separated by ``delimiter`` s, assuming all
+    ``'`` and ``"`` in the start character or following a `delimiter` are paired to
+    quote a token.
 
     Args:
-        `line` (`str`): line as a string
-        `delimiter` (`str|None`; defaults to `None`): `delimiter` to split the line; if `None`, `delimiter` == `' '`.
+        line (required): line as a string
+        delimiter (optional): ``delimiter`` to split the line.
+            If ``None``, ``' '`` (one space) is used.
+            Defaults to **None**.
 
     Returns:
-        A list of tokens: words
-    """  # noqa
+        A list of tokens
+    """
     if not delimiter:
         delimiter = " "
     words = []

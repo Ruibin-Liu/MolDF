@@ -2,7 +2,11 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""PDBx/mmCIF format writing."""
+"""PDBx/mmCIF format writing.
+
+Write a dict of ``Pandas DataFrame`` back to a PDBx file.
+
+"""
 from __future__ import annotations
 
 import os
@@ -15,19 +19,18 @@ import pandas as pd  # type: ignore
 def write_pdbx(
     pdbx: dict[str, pd.DataFrame], file_name: str | os.PathLike | None = None
 ) -> None:
-    """Writes a `dict` of `Pandas DataFrame`s into a PDBx file.
+    """Writes a ``dict`` of ``Pandas DataFrame`` s into a PDBx file.
 
     Args:
-        `pdbx` (`dict[str, pd.DataFrame]`): a `dict` of `Pandas DataFrame`s to write.
-        `file_name` (`str|os.PathLike|None`; defaults to `None`): file name to write a PDBx file.
-            If `None`, `pdbx2df_output.cif` will be used as the file name.
+        pdbx (required): a ``dict`` of ``Pandas DataFrame`` s to write.
 
-    Returns:
-        `None`
+        file_name (optional): file name to write a PDBx file. If ``None``,
+            ``pdbx2df_output.cif`` will be used as the file name.
+            Defaults to **None**.
 
     Raises:
-        `TypeError`: if `pdbx` is not a `dict` of {`str`: `pd.DataFrame`}.
-    """  # noqa
+        TypeError: if ``pdbx`` is not a valid dict of ``DataFrame``.
+    """
     if not file_name:
         file_name = "pdbx2df_output.cif"
 

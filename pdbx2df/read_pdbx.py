@@ -2,7 +2,25 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""PDBx/mmCIF format reading."""
+"""PDBx/mmCIF format reading.
+
+Reads a PDBx file into a dict of ``Pandas DataFrame`` s.
+The dict keys are read from the mmCIF category names automatically.
+For each category, the column names of the corresponding ``DataFrame``
+are read form the category attributes automatically.
+
+For example:
+::
+
+  _audit_conform.dict_name       mmcif_pdbx.dic
+  _audit_conform.dict_version    5.355
+  _audit_conform.dict_location   http://mmcif.pdb.org/dictionaries/ascii/mmcif_pdbx.dic
+
+In this category, the category name is ``_audit_conform``, so the returned dict
+key is ``_audit_conform``. The category attributes are ``dict_name``,
+``dict_version``, and ``dict_location``, so the returned dict value as a
+``DataFrame`` has the exact column names.
+"""
 from __future__ import annotations
 
 import io
@@ -16,6 +34,7 @@ import pandas as pd  # type: ignore
 from .split_line import split_line
 
 AF2_MODEL = 4
+"""For AlphaFold structures, the version to use."""
 
 
 def read_pdbx(
@@ -25,23 +44,36 @@ def read_pdbx(
     pdbx_file_dir: str | os.PathLike | None = None,
     category_names: list | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Reads a `.cif` file's categories into a `dict` of `Pandas DataFrame`s.
+    """Reads a ``.cif`` file's categories into a ``dict`` of ``Pandas DataFrame`` s.
 
     Args:
-        `pdb_id` (`str|None`; defaults to `None`): PDB/Uniprot ID. Required if `pdbx_file` is `None`.
+        pdb_id (optional): PDB/Uniprot ID. Required if ``pdbx_file`` is ``None``.
+            Defaults to **None**.
 
-        `pdbx_file` (`str|os.PathLike[str]|None`; defaults to `None`): file name for a PDBx/mmCIF file. Used over `pdb_id`.
+        pdbx_file (optional): file name for a PDBx/mmCIF file. Used over `pdb_id`.
+            Defaults to **None**.
 
-        `category_names` (`list|None`; defaults to `None`): a list of names for the categories in the mmCIF file format.
-            If `None`, `"all"` is used and all categories will be processed.
+        category_names (optional): a list of categories in the mmCIF file format.
+            If ``None``, ``all`` is used and all categories will be processed.
+            Defaults to **None**.
 
-        `save_pdbx_file` (`bool`; defaults to `True`): whether to save the fetched PDBx file to `pdbx_file_dir`.
+        save_pdbx_file (optional): whether to save the fetched PDBx file from RCSB
+            to ``pdbx_file_dir``. Defaults to **False**.
 
-        `pdbx_file_dir` (`str|os.PathLike|None`; defaults to `None`): directory to save fetched PDBx files.
+        pdbx_file_dir (optional): directory to save fetched PDBx files. If ``None`` but
+            ``save_pdbx_file`` is ``True``, the current working directory is used.
+            Defaults to **None**.
 
     Returns:
-        `dict[str, pd.DataFrame]`: A dict of {`category_name`: `pd.DataFrame` of the info belongs to the category}
-    """  # noqa
+        A dict of ``Pandas DataFrame`` s corresponding to required categories.
+
+    Raises:
+        ValueError: if none of ``pdb_id`` or ``pdbx_file`` is provided, or if ``pdb_id``
+            is given but cannot the PDB file cannot be downloaded from RCSB, or the
+            PDB file is corrupted like no end-line symbol, or some content is irregular.
+
+        FileNotFoundError: if ``pdbx_file`` cannot be found.
+    """
     data: dict[str, pd.DataFrame] = {}
     if pdb_id is None and pdbx_file is None:
         raise ValueError("At least one of pdb_id and pdbx_file has to be given.")
@@ -111,10 +143,11 @@ def read_pdbx(
                             line = line.replace(
                                 '"', "'"
                             )  # to avoid conflict with the next action
-                            line = (
-                                '"' + line[1:]
-                            )  # these ; symbols are not contents but a pair of container symbols for a single record
-                            # but other ';' are parts of a single record, so we use " to make it easier to parse
+                            line = '"' + line[1:]
+                            # these ; symbols are not contents but a pair of container
+                            # symbols for a single record
+                            # but other ';' are parts of a single record, so we use "
+                            # to make it easier to parse
                             if len(line.strip()) == 1:
                                 in_multiple_line = False  # a ';' quoted record ends
                         elif in_multiple_line:
@@ -136,7 +169,7 @@ def read_pdbx(
                 if not loop_category:
                     if len(records) != 2 * len(category_cols):
                         raise ValueError(
-                            f"{pdbx_file} category {category_name} has irregular contents: {records}"
+                            f"{pdbx_file} category {category_name} has irregular contents: {records}"  # noqa
                         )
                     for i, rec in enumerate(records):
                         if i % 2 == 0:
@@ -155,7 +188,7 @@ def read_pdbx(
                     ):
                         raise ValueError(
                             f"""{pdbx_file} category {category_name} has irregular contents:
-                            {len(records)} for {len(category_cols)}"""
+                            {len(records)} for {len(category_cols)}"""  # noqa
                         )
                     record_data = records[len(category_cols) :]
                     for i, i_data in enumerate(record_data):
@@ -171,9 +204,13 @@ def read_pdbx(
                 data[category_name] = pd.DataFrame(category_dict)
                 for c_name in category_names:
                     if c_name not in data:
-                        break  # at least one required_category is not processed, continue the main while loop
+                        break
+                        # at least one required_category is not processed,
+                        # continue the main while loop
                 else:
-                    break  # all required_categories are processed, break the main while loop
+                    break
+                    # all required_categories are processed,
+                    # break the main while loop
 
             if not processing_category:
                 line = pdbx_file_handle.readline()

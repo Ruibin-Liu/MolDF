@@ -2,7 +2,19 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""PDB format reading."""
+"""PDB format reading.
+
+Reads a PDB file, including Chimera compatible ones, into a dict of
+``Pandas DataFrame`` s.
+
+Atom coordinates and sequences are currently supported by the following category names:
+
+    ``_atom_site``:  ``ATOM``, ``HETATM``, ``TER``, ``NUMMDL``, ``MODEL``, and
+    ``ENDMDL`` lines.
+
+    ``_seq_res``: ``SEQRES`` lines.
+
+"""
 from __future__ import annotations
 
 import io
@@ -18,9 +30,16 @@ import pandas as pd  # type: ignore
 from .constants import AMINO_ACIDS
 
 IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res"]
+"""PDB categories that are currently implemented."""
+
 ATOM_SITE = ("ATOM", "HETATM", "TER")
+"""``_atom_site`` primary lines."""
+
 NMR_MDL = ("NUMMDL", "MODEL", "ENDMDL")
+"""``_atom_site`` additional lines."""
+
 AF2_MODEL = 4
+"""For AlphaFold structures, the version to use."""
 
 
 def read_pdb(
@@ -32,40 +51,51 @@ def read_pdb(
     allow_chimera: bool = True,
     need_ter_lines: bool = True,
 ) -> dict[str, pd.DataFrame]:
-    """Reads a `.pdb` file's categories into a `dict` of `Pandas DataFrame`s.
+    """Reads a ``.pdb`` file's categories into a ``dict`` of ``Pandas DataFrame`` s.
 
     Args:
-        `pdb_id` (`str|None`; defaults to `None`): PDB/Uniprot ID. Required if `pdb_file` is `None`.
+        pdb_id (optional): PDB/Uniprot ID. Required if ``pdb_file`` is ``None``.
+            Defaults to **None**.
 
-        `pdb_file` (`str|os.PathLike[str]|None`; defaults to `None`): file name for a PDB file. Used over `pdb_id`.
+        pdb_file (optional): file name for a PDB file. Used over `pdb_id`.
+            Defaults to **None**.
 
-        `category_names` (`list|None`; defaults to `None`): a list of names for the categories as to the mmCIF file format.
-            If None, `'_atom_site'` is used.
-            To be consistent with the PDBx file format, the following category names are used to refer
-            to block(s) in a PDB file and only they are supported:
+        category_names (optional): a list of categories similar to the mmCIF format.
+            If ``None``, ``_atom_site`` is used.
+            To be consistent with the PDBx format, the following category names are
+            used to refer to block(s) in a PDB file and only they are supported:
 
-            1. `'_atom_site'`: `ATOM`, `HETATM`, and `TER` lines and possible `NUMMDL`, `MODEL`, and `ENDMDL` lines.
+                1. ``_atom_site``: ``ATOM``, ``HETATM``, and ``TER`` lines and possible
+                ``NUMMDL``, ``MODEL``, and ``ENDMDL`` lines.
 
-            2. `'_seq_res'`: `SEQRES` lines.
+                2. ``_seq_res``: ``SEQRES`` lines.
 
-        `save_pdb_file`(`bool`; defaults to `True`): whether to save the fetched PDB file to `pdb_file_dir`.
+            Defaults to **None**.
 
-        `pdb_file_dir`(`str|os.PathLike|None`; defaults to `None`): directory to save fetched PDB files.
+        save_pdb_file (optional): whether to save the fetched PDB file from RCSB
+            to ``pdb_file_dir``. Defaults to **True**.
 
-        `allow_chimera` (`bool`; defaults to `True`): whether to allow Chimera-formatted PDB files.
+        pdb_file_dir (optional): directory to save fetched PDB files. If ``None`` but
+            ``save_pdb_file`` is ``True``, the current working directory is used.
+            Defaults to **None**.
 
-        `need_ter_lines` (`bool`; defaults to `True`): whether to read the `TER` lines into the `DataFrame`.
+        allow_chimera (optional): whether to allow Chimera-formatted PDB files.
+            Defaults to **True**.
+
+        need_ter_lines (optional): whether to read the ``TER`` lines into the
+            ``DataFrame``. Defaults to **True**.
 
     Returns:
-        `dict[str, pd.DataFrame]`: A `dict` of {`category_name`: `pd.DataFrame` of the info belongs to the category}
+        A dict of ``Pandas DataFrame`` s corresponding to required categories.
 
     Raises:
-        `ValueError`: `pdb_id` and `pdb_file` are both missing; cannot download `pdb_file` from RCSB if `pdb_id` is given;
+        ValueError: if none of ``pdb_id`` or ``pdbx_file`` is provided, or if ``pdb_id``
+            is given but cannot the PDB file cannot be downloaded from RCSB,
 
-        `NotImplementedError`: if `category_names` not a subset of [`'_atom_site'`, `'_seq_res'`].
+        NotImplementedError: if `category_names` not a subset of allowed names.
 
-        `FileNotFoundError`: `pdb_file` not found in the provided path.
-    """  # noqa
+        FileNotFoundError: if ``pdbx_file`` cannot be found.
+    """
     data: dict[str, pd.DataFrame] = {}
     if pdb_id is None and pdb_file is None:
         raise ValueError("At least one of pdb_id and pdb_file has to be given.")
@@ -217,7 +247,7 @@ def read_pdb(
             chain_sequences[chain_id] = "".join([AMINO_ACIDS[i] for i in residues])
             if len(residues) != chain_lengths[chain_id]:
                 warnings.warn(
-                    f"Cols 14-17 value {chain_lengths[chain_id]} contrasts real length {len(residues)}.",
+                    f"Cols 14-17 value {chain_lengths[chain_id]} contrasts real length {len(residues)}.",  # noqa
                     RuntimeWarning,
                     stacklevel=2,
                 )
@@ -241,20 +271,24 @@ def _split_atom_line(
     allow_chimera: bool = True,
     is_ter_line: bool = False,
 ) -> tuple:
-    """Internal function to parse a single line belonging to `ATOM`, `HETATM`, or `TER` lines.
+    """Internal function to parse a single line belonging to ``ATOM``, ``HETATM``,
+    or ``TER`` lines.
 
     Args:
-        `line` (`str`): A `ATOM`, `HETATM`, or `TER` line.
+        line (required): A ``ATOM``, ``HETATM``, or ``TER`` line.
 
-        `nmr_model` (`int`; defaults to `-1`): the NMR model number for the line; default `-1` means not an NMR model.
+        nmr_model (optional): the NMR model number for the line; ``-1`` means
+            not an NMR model. Defaults to **-1**.
 
-        `allow_chimera` (`bool`; defaults to `True`): try to parse as a Chimera-formatted PDB file.
+        allow_chimera (optional): try to parse as a Chimera-formatted PDB file.
+            Defaults to **True**
 
-        `is_ter_line` (`bool`; defaults to `False`): whether the line starts with `TER`.
+        is_ter_line (optional): whether the line starts with ``TER``.
+            Defaults to **False**.
 
     Returns:
-        `tuple`: parsed values.
-    """  # noqa
+        parsed values as a tuple.
+    """
     if not (is_ter_line or allow_chimera):
         return (
             line[0:6],

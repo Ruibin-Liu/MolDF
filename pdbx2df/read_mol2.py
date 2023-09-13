@@ -2,7 +2,12 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""Mol2 format reading."""
+"""Mol2 format reading.
+
+Read a Tripos ``.mol2`` file into a dictionary of ``pandas DataFrames``. Different
+categories like 'ATOM' and 'BOND' are read into different DataFrame objects.
+
+"""
 from __future__ import annotations
 
 import os
@@ -11,6 +16,8 @@ import warnings
 import pandas as pd  # type: ignore
 
 IMPLEMENTED_MOL2_CATS = ["ATOM", "MOLECULE", "BOND"]
+"""MOL2 categories that are currently implemented."""
+
 
 ATOM_COL_NAMES = (
     "atom_id",  # int
@@ -24,6 +31,8 @@ ATOM_COL_NAMES = (
     "charge",  # float, optional
     "status_bit",  # str, optional
 )
+"""MOL2 ``ATOM`` column names."""
+
 
 BOND_COL_NAMES = (
     "bond_id",  # int
@@ -32,26 +41,29 @@ BOND_COL_NAMES = (
     "bond_type",  # str
     "status_bit",  # str, optional
 )
+"""MOL2 ``BOND`` column names."""
 
 
 def read_mol2(
     mol2_file: str | os.PathLike,
     category_names: list | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Reads a `.mol2` file's categories into a `dict` of `Pandas DataFrame`s.
+    """Reads a ``.mol2`` file's categories into a ``dict`` of ``Pandas DataFrame`` s.
 
     Args:
-        `mol2_file` (`str|os.PathLike`): file name for a PDB file.
+        mol2_file(required): file name for a PDB file.
 
-        `category_names` (`list|None`; defaults to `None`): a list of names for the categories as to the `.mol2` file format.
-            If `None`, [`'ATOM'`, `'MOLECULE'`, `'BOND'`] is used.
+        category_names (optional): a list of categories as to the ``.mol2`` file format.
+            If ``None``, [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``] is used.
+            Defaults to **None**.
 
     Returns:
-        `dict[str, pd.DataFrame]`: A dict of {`category_name`: `pd.DataFrame` of the info belongs to the category}
+        A dict of ``category_name`` as keys(s) and ``pd.DataFrame`` as values.
 
     Raises:
-        `NotImplementedError`: if `category_names` not a subset of [`'ATOM'`, `'MOLECULE'`, `'BOND'`]
-    """  # noqa
+        NotImplementedError: if ``category_names`` not a subset of
+            [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``]
+    """
     data: dict[str, pd.DataFrame] = {}
     if category_names is None:
         category_names = ["ATOM", "MOLECULE", "BOND"]
@@ -111,15 +123,16 @@ def read_mol2(
     return data
 
 
-def _get_molecule_df(molecule_lines: list) -> pd.DataFrame:
-    """Turns the `MOLECULE` lines into a `Pandas DataFrame`.
+def _get_molecule_df(molecule_lines: list[tuple]) -> pd.DataFrame:
+    """Turns the ``MOLECULE`` lines into a ``Pandas DataFrame``.
 
     Args:
-        `molecule_lines` (`list`): a list of tuples corresponding to each line's content.
+        molecule_lines (required): a list of tuples corresponding to
+            each line's content.
 
     Returns:
-        `pd.DataFrame`: the `MOLECULE` category as a `Pandas DataFrame`
-    """  # noqa
+        ``Pandas DataFrame`` of The ``MOLECULE`` category
+    """
     molecule_attrs: dict[str, list[str] | list[int]] = {}
     line_0 = {"mol_name": [" ".join(molecule_lines[0])]}
     line_1_names = ["num_atoms", "num_bonds", "num_subst", "num_feat", "num_sets"]
@@ -140,15 +153,15 @@ def _get_molecule_df(molecule_lines: list) -> pd.DataFrame:
 
 
 def _set_atom_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
-    """Sets the data types for the `ATOM` category.
+    """Sets the data types for the ``ATOM`` category.
 
     Args:
-        `data_df` (`pd.DataFrame`): original `Pandas DataFrame` for the `ATOM` category with all strings.
+        data_df (required): original ``Pandas DataFrame``
+            for the ``ATOM`` category with all strings.
 
     Returns:
-        `pd.DataFrame`: the `ATOM` `Pandas DataFrame` dtypes corrected for `'atom_id'`, `'x'`, `'y'`, `'z'`,
-           and possibly [`'subst_id'`, [`'charge'`]] columns.
-    """  # noqa
+        ``Pandas DataFrame`` of The ``ATOM`` category
+    """
     data_df[["atom_id", "x", "y", "z"]] = data_df[["atom_id", "x", "y", "z"]].astype(
         {"atom_id": "int32", "x": "float32", "y": "float32", "z": "float32"}
     )
@@ -161,14 +174,15 @@ def _set_atom_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _set_bond_df_dtypes(data_df: pd.DataFrame) -> pd.DataFrame:
-    """Sets the data types for the `BOND` category
+    """Sets the data types for the ``BOND`` category
 
     Args:
-        `data_df` (`pd.DataFrame`): original `Pandas DataFrame` for the `BOND` category with all strings.
+        data_df (required): original ``Pandas DataFrame``
+            for the ``BOND`` category with all strings.
 
     Returns:
-        `pd.DataFrame`: dtypes corrected for `'bond_id'`, `'origin_atom_id'`, and `'target_atom_id'` columns.
-    """  # noqa
+        ``Pandas DataFrame`` of The ``BOND`` category
+    """
     data_df[["bond_id", "origin_atom_id", "target_atom_id"]] = data_df[
         ["bond_id", "origin_atom_id", "target_atom_id"]
     ].astype({"bond_id": "int32", "origin_atom_id": "int32", "target_atom_id": "int32"})
