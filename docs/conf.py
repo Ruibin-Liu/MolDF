@@ -9,8 +9,8 @@ project = "pdbx2df"
 copyright = "2023, Ruibin Liu"
 author = "Ruibin Liu"
 
-release = "0.6.2"
-version = "0.6.2"
+release = "0.6.3"
+version = "0.6.3"
 
 # -- General configuration
 
