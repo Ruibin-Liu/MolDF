@@ -69,7 +69,7 @@ Contents
    self
    install
    usage
-   pdbx2df
+   api
 
 
 .. toctree::
