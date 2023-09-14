@@ -1,3 +1,7 @@
+numpy
+pandas
+scipy
 sphinx
 furo
 sphinx-copybutton
+typing_extensions
