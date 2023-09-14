@@ -6,25 +6,25 @@
 Welcome to pdbx2df's documentation!
 ===================================
 
-**pdbx2df** reads biology structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ into
-dictionaries of `Pandas DataFrame`_ s. With such a data structure, relatively loosely coupled
+**pdbx2df** reads structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ used in biology and chemistry
+into dictionaries of `Pandas DataFrame`_ s. With such a data structure, relatively loosely coupled
 data are separated into different ``DataFrame`` objects but are still linked to each other in
 the same `Python dict`_. For the ``DataFrame`` objects, cheminformatians, bioinformaticans, and
-machine learning researchers should feel very comfortable to work with. It's easy to visualize,
-group, filter, manipulate, and export to other formats. Moreover, most machine learning frameworks
-support ``DataFrame`` s as inputs. This library makes it easy, intuitive, and fast to read those
+machine learning researchers should feel very comfortable to work with. It's easy to inspect, visualize,
+group, filter, manipulate, and export to other portable formats. Moreover, most machine learning frameworks
+support ``DataFrame`` s as inputs directly. This library makes it easy, intuitive, and fast to read those
 files into ``DataFrame`` s.
 
-The PDBx/mmCIF format is the easiest to parse as a dict of ``DataFrame`` in that we can just use
-the provided category names as dict keys and provided attribute names as column names in the
-``DataFrame``.
+The PDBx/mmCIF format is the easiest to parse into a dict of ``DataFrame`` in that we can just use
+the provided category names as dict keys and the provided attribute names as column names in the
+``DataFrame``. Indeed, many mmCIF parsers just parse them into dicts.
 
-The MOL2 format is the also quite straightforward because different category of data are well separated
+The MOL2 format is also quite straightforward to parse because different category of data are well separated
 by definition. The category names and column names are also provided by the `Tripos`_ document.
-The minor difficulty comes from the fact that many categories have unstructured data.
+The minor difficulty comes from the fact that many categories have unstructured and/or optional data.
 
-The PDB format is harder to parse. Except for a few categories like ``SEQRES`` which are self
-constrained, many categories can be misleading if parsed into different ``DataFrame`` s. As such, I
+The PDB format is harder to parse compared to the other two. Except for a few categories like ``SEQRES`` which are self
+contained, many categories can be misleading if parsed into different ``DataFrame`` s. As such, I
 arbitrarily created some coarse-grained category names to group several categories together. As a result,
 the ``_atom_site`` category, mimicking the PDBx/mmCIF ``_atom_site`` category, is handy to work with for
 most use cases.
@@ -36,11 +36,12 @@ most use cases.
 .. _MOL2: http://www.csb.yale.edu/userguides/datamanip/dock/DOCK_4.0.1/html/Manual.41.html
 .. _Tripos: https://docs.chemaxon.com/display/docs/tripos-mol2-format.md
 
-There are many other PDBx/PDB/MOL2 parsers, like `Biopython PDBParser`_ and `OpenMM PDBFile`_ but most mainly parses
-the coordinates, and make the whole molecule into a python object.
+There are many other PDBx/PDB/MOL2 parsers, like `Biopython PDBParser`_ and `OpenMM PDBFile`_, but most mainly parse
+the coordinates, and make the whole molecule into a python object of objects.
 It can be convenient in several use cases, but not so intuitive to visualize individual entries, select atoms, merge molecules,
-and export to other formats. And since they might need to build many python objects and not take advantage of the underlying structure
-of those structured data, they can be slow. Large scale of processing those files is not viable.
+or export to other formats. And since they might need to build many python objects and not take advantage of the underlying structure
+of those structured data, they can be slow in large scale data processing. Moreover, those python objects are not so convenient to
+transfer to other platform or programming languages.
 
 There are other python packages that can parse PDB files into ``DataFrame`` s. `CPDB`_ is the fastest by using Cython according to the author's
 `benchmarks`_. But it can only parse PDB files not the other formats, and no writing back to PDB files.
@@ -52,7 +53,7 @@ Other than the lightweight and speedy parts, perhaps the provided  :ref:`PDBData
 subclass, is the most useful feature when we need to access common atom groups or select atoms finely. The ``PDBDataFrame`` class provides an easy to use
 ``.`` syntax to access common atom groups like ``backbone``, ``side_chain``, ``water``, and ``heavy_atoms``. It also implements atom selection language
 in a pythonic way that we can select by ``atom_numbers``, ``atom_names``, ``chain_ids``, ``residue_names``, ``residue_numbers``, ``x_coord``, ``y_coord``,
-``z_coord``, ``b_factor``, and others. We can also select by ``distances`` in a very flexible way. Check the documents for detailed information.
+``z_coord``, ``b_factor``, and others. We can even select by ``distances`` in a very flexible way. Check the documents for detailed information.
 
 
 .. _Biopython PDBParser: https://biopython.org/docs/1.75/api/Bio.PDB.PDBParser.html

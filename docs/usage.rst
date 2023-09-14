@@ -1,13 +1,17 @@
 Quick Start
 ===========
 
+This quick start tutorial will guide you to use the ``pdbx2df`` functions and classes to read, manipulate,
+and write PDBx, PDB, and MOL2 files. You will learn by going through some basic but useful examples.
+
+(Examples for writing those files will be added soon.)
 
 .. _PDB:
 
 1. Read PDB files
 -----------------
 
-To read a PDB file, you can use  ``pdbx2df.read_pdb()`` function:
+To read a PDB file, you can use the ``pdbx2df.read_pdb`` function:
 
 One of the ``pdb_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdb``
 will raise an exception. If ``pdb_file`` is given, ``pdb_id`` is ignored.
@@ -27,9 +31,9 @@ For example:
    >>> pdb.keys()
    dict_keys(['_atom_site'])
 
-By default, a ``1vii.pdb`` file is downloaded to the ``./PDB_files`` from 1VII_.
+By default, a ``1vii.pdb`` file is downloaded to the ``./PDB_files`` directory from RCSB 1VII_.
 
-If you have a local PDB file ``test.pdb`` under your current directory. You can read it:
+If you have a local PDB file ``test.pdb`` under your current directory. You can read it as:
 
 .. code-block:: python3
 
@@ -40,76 +44,79 @@ If you have a local PDB file ``test.pdb`` under your current directory. You can 
 2. Select atoms using PDBDataFrame
 -------------------------------------
 
-To select rows in the ``_atom_site`` ``DataFrame``, we can of course just use standard filter operations in ``Pandas``.
+To select rows in the ``_atom_site`` ``DataFrame``, you can of course just use standard filter operations in ``Pandas``.
+For example, you might have thought of something as below:
 
 .. code-block:: python3
 
    >>> pdb_df = pdb['_atom_site']
    >>> ca_atoms = pdb_df[(pdb_df.atom_name.str.strip().isin(['CA'])) & (pdb_df.element_symbol.str.strip().isin(['C']))]
 
-But it obvious to see the cumbersomeness and error-proneness when we need more complex selection. And it should be noted
-that the ``element_symbol`` is necessary because only using ``atom_name`` could give out a ``DataFrame`` containing calcium
-atoms if there is any, because calcium atoms also have ``atom_name`` as ``CA``.
+But it is obvious to see the cumbersomeness and error-proneness if we need more complex selections. And it should be noted
+that the condition as to ``element_symbol`` is necessary because only using the condition as to ``atom_name`` could give out
+a ``DataFrame`` containing calcium atoms if there is any, because calcium atoms also have ``atom_name`` as ``CA``.
 
-Instead, we should use the selection language implemented in the :ref:`PDBDataFrame <PDBDataFrame>` ``class``. For the same selection,
+Instead, you could use the selection language implemented in the :ref:`PDBDataFrame <PDBDataFrame>` ``class``. For the same selection,
 it is simply:
 
 .. code-block:: python3
 
-   >>> pdb_df = pdb['_atom_site']
+   >>> from pdbx2df import PDBDataFrame
+   >>> pdb_df = PDBDataFrame(pdb_df)  # Just adding a few methods to the standard Pandas DataFrame
    >>> ca_atoms = pdb_df.ca_atoms
 
 Or equally,
 
 .. code-block:: python3
 
-   >>> pdb_df = pdb['_atom_site']
-   >>> ca_atoms = pdb_df.atom_names(['CA'])
+   >>> ca_atoms = pdb_df.atom_names(['CA'])  # If you want calcium atoms, you have to add 'CA' to the 'names_2c' keyword herej.
 
-The first method uses the build-in ``ca_atoms`` python ``property`` so that we could use the ``.`` syntax. Check the :ref:`PDBDataFrame <PDBDataFrame>` ``class``
-documentation for other convenient properties.
+The first method uses the build-in ``ca_atoms`` python ``property`` so that you can use the familiar ``.`` syntax.
+Check the :ref:`PDBDataFrame <PDBDataFrame>` ``class`` documentation for other convenient properties.
 
-The build-in properties are convenient but not so flexible nor powerful. The second method is much more flexible that we can select atoms providing a
-list of ``atom_name`` s to the ``atom_names`` method. We can invert the selection by:
+The build-in properties are handy but not so flexible nor powerful. The second method is much more flexible in that
+you can select atoms providing a list of ``atom_name`` s to the ``atom_names`` method and optionally specifying metal atoms in
+the ``names_2c`` keyword. You can also invert the selection by:
 
 .. code-block:: python3
 
    >>> not_ca_atoms = pdb_df.atom_names(['CA'], invert=True)
 
-All columns in the ``PDBDataFrame`` are supported for such a language, simply by use the plural form of the column names as methods for selecting
-the corresponding columns. Another example,
+All columns in the ``PDBDataFrame`` are supported for such an atom selection language, simply by use the plural forms of the
+column names as methods for selecting the corresponding columns. Another example:
 
 .. code-block:: python3
 
    >>> x_coord_larger_than_zero = pdb_df.x_coords(0, relation='>') # all atoms whose 'x_coord' > 0
 
-Here it shows we can use the ``relation`` keywords to control the relationship between the variable and the reference value if it's a numerical column
-like `x_coord` or `atom_number` etc.
+Here it shows you can use the ``relation`` keywords to control the relationship between the target variable and the reference value
+if it is a numerical column like `x_coord` or `atom_number` etc.
 
-Selection based on ``distance`` can be done through the ``distances`` method.
+Selection based on ``distance`` can be done easily through the ``distances`` method, e.g.:
 
 .. code-block:: python3
 
    >>> close_to_origin = pdb_df.distances([0.0, 0.0, 0.0], cut_off=10.0, relation='<=')
 
-which gives us all atoms within 10.0 Å of the point [0.0, 0.0, 0.0].
+which gives you all atoms within 10.0 Å of the point [0.0, 0.0, 0.0].
 
 
-Even more, we can chain and make arbitrary combinations of them to get very complex selections.
+Even more, you can chain and make arbitrary combinations of them to get very complex selections.
 
 .. code-block:: python3
 
    >>> complex_selection = pdb_df.chain_ids(['A']).backbone.atom_names(['N']).residue_names(['Lys', 'His', 'Arg']).distances([0.0, 0.0, 0.0], cut_off=10.0, relation='<=')
 
-which gives us all the nitrogen atoms in the backbone of Lys, His, and Arg residues of 1vii's chain A that are within 10.0 Å of the origin point.
-For such a selection, using vanilla ``Pandas`` filter language can be very frustrating.
+which gives you all the nitrogen atoms in the backbone of Lys, His, and Arg residues of 1vii's chain A that are within 10.0 Å of the origin point.
+For such a selection, using vanilla ``Pandas`` filter language can be very time-consuming, error-prone, and thus frustrating.
+Fortunately, ``pdbx2df`` can help you save a lot of effort.
 
 .. _PDBX:
 
 3. Read mmCIF/PDBx files
 ------------------------
 
-To read a PDBx file, you can use  ``pdbx2df.read_pdbx()`` function:
+To read a PDBx file, you can use the ``pdbx2df.read_pdbx`` function:
 
 
 One of the ``pdbx_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdbx``
@@ -139,7 +146,7 @@ dict_keys(['_entry', '_audit_conform', '_database_2', '_pdbx_database_status', '
            '_pdbx_audit_revision_details', '_pdbx_audit_revision_group', '_pdbx_audit_revision_category',
            '_pdbx_audit_revision_item', '_software', '_pdbx_validate_close_contact', '_pdbx_validate_torsion'])
 
-By default, a ``1vii.cif`` file is downloaded to the ``./PDBx_files`` from 1VII_.
+By default, a ``1vii.cif`` file is downloaded to the ``./PDBx_files`` from RCSB 1VII_.
 
 Similarly to the ``read_pdb`` case, you can read a local ``test.cif`` file as well:
 
@@ -155,9 +162,9 @@ Similarly to the ``read_pdb`` case, you can read a local ``test.cif`` file as we
 4. Read MOL2 files
 ------------------
 
-To read a Tripos MOL2 file, you can use  ``pdbx2df.read_mol2()`` function:
+To read a Tripos MOL2 file, you can use the ``pdbx2df.read_mol2`` function:
 
-Let's download an example MOL2 file from LigandBox first. The ligand is D00217_.
+Let's download an example MOL2 file from LigandBox first. The example ligand is D00217_.
 
 We can read it:
 

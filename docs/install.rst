@@ -13,8 +13,8 @@ Installation
 Python >= 3.7 versions are supported. Python 3.9, 3.10, and 3.11 versions
 on latest Ubuntu, Windows, and Mac OS are tested.
 
-Development
-------------
+For development setup or contributing
+-------------------------------------
 
 .. code-block:: console
 
@@ -24,4 +24,4 @@ Development
     $ pip install -r requirements_dev.txt
     $ pip install -e .
 
-Python >= 3.10 is used for development.
+Python >= 3.10 is used for development. For improving ``docs``, ``pip install -r docs/requirements.txt`` in addition.
