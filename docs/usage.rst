@@ -4,12 +4,10 @@ Quick Start
 This quick start tutorial will guide you to use the ``pdbx2df`` functions and classes to read, manipulate,
 and write PDBx, PDB, and MOL2 files. You will learn by going through some basic but useful examples.
 
-(Examples for writing those files will be added soon.)
-
 .. _PDB:
 
-1. Read PDB files
------------------
+1. Read a PDB file
+------------------
 
 To read a PDB file, you can use the ``pdbx2df.read_pdb`` function:
 
@@ -42,7 +40,7 @@ If you have a local PDB file ``test.pdb`` under your current directory. You can 
 .. _PDBDataFrame_QS:
 
 2. Select atoms using PDBDataFrame
--------------------------------------
+----------------------------------
 
 To select rows in the ``_atom_site`` ``DataFrame``, you can of course just use standard filter operations in ``Pandas``.
 For example, you might have thought of something as below:
@@ -52,7 +50,7 @@ For example, you might have thought of something as below:
    >>> pdb_df = pdb['_atom_site']
    >>> ca_atoms = pdb_df[(pdb_df.atom_name.str.strip().isin(['CA'])) & (pdb_df.element_symbol.str.strip().isin(['C']))]
 
-But it is obvious to see the cumbersomeness and error-proneness if we need more complex selections. And it should be noted
+But it is obvious to see the cumbersomeness and error-proneness if you need more complex selections. And it should be noted
 that the condition as to ``element_symbol`` is necessary because only using the condition as to ``atom_name`` could give out
 a ``DataFrame`` containing calcium atoms if there is any, because calcium atoms also have ``atom_name`` as ``CA``.
 
@@ -111,10 +109,33 @@ which gives you all the nitrogen atoms in the backbone of Lys, His, and Arg resi
 For such a selection, using vanilla ``Pandas`` filter language can be very time-consuming, error-prone, and thus frustrating.
 Fortunately, ``pdbx2df`` can help you save a lot of effort.
 
+.. _PDB_write:
+
+3. Write DataFrames back to a PDB file
+--------------------------------------
+
+Writing back to a PDB file is simply:
+
+.. code-block:: python3
+
+   >>> from pdbx2df import write_pdb
+   >>> write_pdb(pdb, 'output.pdb')
+
+Remember to use the ``pdb`` object, not the ``pdb_df``, or it will error out. An ``output.pdb`` file is saved to your working directory.
+
+If you want to save the selected atoms (e.g. the ``complex_selection`` example above) only, you can:
+
+.. code-block:: python3
+
+   >>> pdb_out = {'_atom_site': complex_selection}
+   >>> write_pdb(pdb_out, 'complex_selection.pdb')
+
+and the ``complex_selection.pdb`` has all and only the atoms in the ``complex_selection``.
+
 .. _PDBX:
 
-3. Read mmCIF/PDBx files
-------------------------
+4. Read a mmCIF/PDBx file
+-------------------------
 
 To read a PDBx file, you can use the ``pdbx2df.read_pdbx`` function:
 
@@ -157,16 +178,39 @@ Similarly to the ``read_pdb`` case, you can read a local ``test.cif`` file as we
 .. _1VII: https://www.rcsb.org/structure/1VII
 
 
+5. Write DataFrames back to a PDBx file
+---------------------------------------
+
+Similar to the above :ref:`writing back to PDB file <PDB_write>` example, you can write back to a PDBx file like:
+
+.. code-block:: python3
+
+   >>> from pdbx2df import write_pdbx
+   >>> write_pdbx(pdbx, 'output.cif')
+
+Here the ``pdbx`` object is the one generated in the :ref:`PDBx reading <PDBX>` example.
+An ``output.cif`` file is saved to your working directory.
+
+Perhaps a useful case is that you want to keep only some categories but removing the other redundant ones:
+
+.. code-block:: python3
+
+   >>> to_keep = ['_atom_site', '_entity_poly']
+   >>> pdbx_keep = {k: v for k, v in pdbx.items() if k in keep}
+   >>> write_pdbx(pdbx_keep, 'to_keep.cif')
+
+And thus only the ``_atom_site`` and ``_entity_poly`` categories are saved to your working directory as ``to_keep.cif``.
+
 .. _MOL2:
 
-4. Read MOL2 files
-------------------
+6. Read a MOL2 file
+-------------------
 
 To read a Tripos MOL2 file, you can use the ``pdbx2df.read_mol2`` function:
 
 Let's download an example MOL2 file from LigandBox first. The example ligand is D00217_.
 
-We can read it:
+You can read it as:
 
 .. code-block:: python3
 
