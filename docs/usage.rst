@@ -208,7 +208,7 @@ And thus only the ``_atom_site`` and ``_entity_poly`` categories are saved to yo
 
 To read a Tripos MOL2 file, you can use the ``pdbx2df.read_mol2`` function:
 
-Let's download an example MOL2 file from LigandBox first. The example ligand is D00217_.
+Let's download an example MOL2 file from LigandBox first. The example ligand is D00217_ or Tylenol_.
 
 You can read it as:
 
@@ -224,3 +224,4 @@ You can read it as:
    dict_keys(['ATOM', 'MOLECULE', 'BOND'])
 
 .. _D00217: http://www.mypresto5.com/ligandbox/cgi-bin/liginf.cgi?id=D00217&source=KEGG_DRUG
+.. _Tylenol: https://en.wikipedia.org/wiki/Tylenol_(brand)
