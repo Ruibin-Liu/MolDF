@@ -26,10 +26,10 @@ def test_read_pdb():
         need_ter_lines=True,
     )
     pdb_df = pdb["_atom_site"]
-    assert (pdb_df.tail(1).nmr_model == 20).bool(), "NMR model index not read as 20."
+    assert (pdb_df.tail(1).nmr_model == 20).item(), "NMR model index not read as 20."
     assert (
         pdb_df.tail(1).record_name == "TER   "
-    ).bool(), "Last record name not 'TER   ' when TER lines are required."
+    ).item(), "Last record name not 'TER   ' when TER lines are required."
     pdb = read_pdb(
         pdb_file=test_file,
         category_names=["_atom_site"],
@@ -39,7 +39,7 @@ def test_read_pdb():
     pdb_df = pdb["_atom_site"]
     assert (
         pdb_df.tail(1).record_name == "ATOM  "
-    ).bool(), "Last record name not 'ATOM  ' when TER lines are not required."
+    ).item(), "Last record name not 'ATOM  ' when TER lines are not required."
 
     # From PDB ID
     pdb_id = "1VIi"
@@ -55,7 +55,7 @@ def test_read_pdb():
     ), "File not saved to PDB_files if pdb_file_dir not provided."
     assert (
         pdb_df.head(1).residue_name == "MET"
-    ).bool(), "First 1VII residue is not MET."
+    ).item(), "First 1VII residue is not MET."
 
     # From Uniprot ID
     uniprot_id = "P01116"
@@ -71,7 +71,7 @@ def test_read_pdb():
     ), "File not saved to PDB_files if pdb_file_dir not provided."
     assert (
         pdb_df.head(1).residue_number == 1
-    ).bool(), "First P01116 residue number is not 1."
+    ).item(), "First P01116 residue number is not 1."
 
     # Non-NMR PDB
     file_path = [CFD, "test_files", "5K9I.pdb"]
@@ -95,10 +95,10 @@ def test_read_pdb():
     pdb_df = pdb_df[pdb_df.record_name == "TER   "]
     assert (
         pdb_df.tail(1).atom_number == 14209
-    ).bool(), "Chimera PDB didn't get larger than 9999 atoms."
+    ).item(), "Chimera PDB didn't get larger than 9999 atoms."
     assert (
         pdb_df.tail(1).residue_name == "LEUX"
-    ).bool(), "Chimera PDB didn't get 4-letter residue names."
+    ).item(), "Chimera PDB didn't get 4-letter residue names."
 
 
 def test_read_seq_res():

@@ -25,11 +25,11 @@ def test_read_mol2():
     mol2_atom_df = mol2["ATOM"]
     mol2_bond_df = mol2["BOND"]
     mol2_molecule_df = mol2["MOLECULE"]
-    assert (mol2_atom_df.head(1).atom_id == 1).bool(), "The first atom_id is not 1."
-    assert (mol2_bond_df.tail(1).bond_id == 62).bool(), "The last bond_id is not 62."
+    assert (mol2_atom_df.head(1).atom_id == 1).item(), "The first atom_id is not 1."
+    assert (mol2_bond_df.tail(1).bond_id == 62).item(), "The last bond_id is not 62."
     assert (
         mol2_molecule_df.tail(1).mol_name == "KEGG_DURG-00000915-01"
-    ).bool(), "The MOLECULE mol_name is not KEGG_DURG-00000915-01."
+    ).item(), "The MOLECULE mol_name is not KEGG_DURG-00000915-01."
 
     # Not implemented
     message = """Only ATOM, MOLECULE, BOND categories are implemented for the MOL2 format.

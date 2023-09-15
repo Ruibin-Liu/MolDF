@@ -70,7 +70,7 @@ def test_read_pdbx():
     ), "File not saved to PDBx_files if pdbx_file_dir not provided."
     assert (
         pdb_df.head(1).label_comp_id == "MET"
-    ).bool(), "First 1VII residue is not MET."
+    ).item(), "First 1VII residue is not MET."
 
     # From Uniprot ID
     uniprot_id = "P01116"
@@ -85,4 +85,4 @@ def test_read_pdbx():
     ), "File not saved to PDBx_files if pdbx_file_dir not provided."
     assert (
         pdb_df.head(1).label_seq_id == 1
-    ).bool(), "First P01116 residue number is not 1."
+    ).item(), "First P01116 residue number is not 1."

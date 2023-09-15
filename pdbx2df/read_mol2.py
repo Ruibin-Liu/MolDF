@@ -89,13 +89,14 @@ def read_mol2(
                     continue
                 category_block_lines[category_name] = []
                 line = mol_f.readline()
-                while line and line != "\n":
+                while line and line != "\n" and line[0] != "@":
                     category_block_lines[category_name].append(
                         tuple(line.strip().split())
                     )
                     line = mol_f.readline()
+                if line and line[0] == "@":
+                    continue
             line = mol_f.readline()
-
     for category_name in category_names:
         if category_name not in category_block_lines:
             warnings.warn(
