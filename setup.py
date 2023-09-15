@@ -26,7 +26,10 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Ruibin-Liu/pdbx2df",
-    project_urls={"Bug Tracker": "https://github.com/Ruibin-Liu/pdbx2df/issues"},
+    project_urls={
+        "Bug Tracker": "https://github.com/Ruibin-Liu/pdbx2df/issues",
+        "Documentation": "https://pdbx2df.readthedocs.io/en/stable/",
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
