@@ -4,14 +4,16 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../"))
 
+from pdbx2df.version import __version__ as pdbx2df_version  # type: ignore
+
 # -- Project information
 
 project = "pdbx2df"
 copyright = "2023, Ruibin Liu"
 author = "Ruibin Liu"
 
-release = "0.6.3"
-version = "0.6.3"
+version = pdbx2df_version
+release = pdbx2df_version
 
 # -- General configuration
 
