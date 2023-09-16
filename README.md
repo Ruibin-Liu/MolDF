@@ -1,4 +1,11 @@
-# pdbx2df
+<div align="center">
+  <img src="https://github.com/Ruibin-Liu/pdbx2df/blob/main/logo_name.svg"><br>
+</div>
+
+-----------------
+
+# pdbx2df: molecular structure data processing and analysis with DataFrame
+
 
 ![Tests](https://github.com/Ruibin-Liu/pdbx2df/actions/workflows/tests.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pdbx2df/badge/?version=latest)](https://pdbx2df.readthedocs.io/en/latest/?badge=latest)
