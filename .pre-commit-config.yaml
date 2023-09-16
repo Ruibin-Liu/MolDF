@@ -9,10 +9,10 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: tests/test_files, logo_name.svg
+        exclude: 'tests/test_files|logo_name.svg'
       - id: forbid-new-submodules
       - id: trailing-whitespace
-        exclude: tests/test_files, logo_name.svg
+        exclude: 'tests/test_files|logo_name.svg'
 
   - repo: https://github.com/psf/black
     rev: 23.9.1
