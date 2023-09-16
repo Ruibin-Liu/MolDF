@@ -9,10 +9,10 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: 'tests/test_files|logo_name.svg'
+        exclude: 'tests/test_files|assets'
       - id: forbid-new-submodules
       - id: trailing-whitespace
-        exclude: 'tests/test_files|logo_name.svg'
+        exclude: 'tests/test_files|assets'
 
   - repo: https://github.com/psf/black
     rev: 23.9.1
@@ -30,7 +30,7 @@ repos:
             "flake8-logging-format==0.9.0",
             "flake8-implicit-str-concat==0.4.0",
           ]
-        exclude: tests/test_files
+        exclude: 'tests/test_files|assets'
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0

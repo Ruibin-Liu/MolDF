@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/Ruibin-Liu/pdbx2df/blob/main/logo_name.svg"><br>
+  <img src="https://github.com/Ruibin-Liu/pdbx2df/blob/main/assets/logo_name.svg"><br>
 </div>
 
 -----------------
