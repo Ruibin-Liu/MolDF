@@ -23,8 +23,6 @@ def test_write_pdb():
     pdb = read_pdb(
         pdb_file=test_file, category_names=["_atom_site"], allow_chimera=False
     )
-    pdb_df = pdb["_atom_site"]
-    print(pdb_df.residue_name.unique())
 
     compare_to = [CFD, "test_files", f"{pdb_id}_pdbx2df.pdb"]
     compare_to = f"{os.sep}".join(compare_to)
