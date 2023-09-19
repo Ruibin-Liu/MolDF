@@ -394,8 +394,8 @@ class PDBDataFrame(pd.DataFrame):
 
     @property
     @functools.lru_cache()
-    def radius_of_gyration(self) -> np.ndarray:
-        """Gets the radius of gyration as a ``(3, )`` ``np.ndarray``."""
+    def radius_of_gyration(self) -> float:
+        """Gets the radius of gyration"""
         com = self.center_of_mass
         com_t = (com[0], com[1], com[2])  # type: ignore
         dist_to_com = PDBDataFrame.get_distance_matrix(self.atoms, com_t, use_r2=True)
