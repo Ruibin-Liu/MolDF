@@ -18,7 +18,7 @@ import pandas as pd  # type: ignore
 
 from .version import __version__ as pdbx2df_version
 
-IMPLEMENTED_MOL2_CATS = ["MOLECULE", "ATOM", "BOND"]
+IMPLEMENTED_MOL2_CATS = ["MOLECULE", "ATOM", "BOND", "HEADER"]
 """MOL2 categories that are currently implemented."""
 
 
@@ -59,6 +59,16 @@ def write_mol2(
         out_file.write("###\n")
         today = date.today().strftime("%Y-%m-%d")
         out_file.write(f"### Created by pdbx2df v{pdbx2df_version} {today}\n")
+
+        if "HEADER" in mol2:
+            df_header = mol2["HEADER"]
+            for col_name in df_header.columns:
+                header_line = df_header[col_name].to_list()[0]
+                if col_name.startswith("info_"):
+                    out_file.write(f"### Original header: {header_line}\n")
+                else:
+                    out_file.write(f"### {col_name}: {header_line}\n")
+
         out_file.write("###\n\n")
         out_file.write("@<TRIPOS>MOLECULE\n")
         if "MOLECULE" in mol2:
@@ -121,7 +131,7 @@ def write_mol2(
                 out_file.write(line + "\n")
 
         if "BOND" in mol2:
-            out_file.write("\n@<TRIPOS>BOND\n")
+            out_file.write("@<TRIPOS>BOND\n")
             for _, row in mol2["BOND"].iterrows():
                 bond_id = row["bond_id"]
                 origin_atom_id = row["origin_atom_id"]

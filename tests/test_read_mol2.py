@@ -32,7 +32,7 @@ def test_read_mol2():
     ).item(), "The MOLECULE mol_name is not KEGG_DURG-00000915-01."
 
     # Not implemented
-    message = """Only ATOM, MOLECULE, BOND categories are implemented for the MOL2 format.
+    message = """Only ATOM, MOLECULE, BOND, HEADER categories are implemented for the MOL2 format.
                 Create an issue at https://github.com/Ruibin-Liu/pdbx2df if
                 you want the ANCHOR_ATOM category to be implemented.
                 """  # noqa

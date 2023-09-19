@@ -1,5 +1,6 @@
 ###
-### Created by pdbx2df v0.6.4 2023-09-18
+### Created by pdbx2df v0.6.5 2023-09-19
+### Original header: Created by X-TOOL on Mon Sep 10 21:13:02 2018
 ###
 
 @<TRIPOS>MOLECULE
@@ -68,7 +69,6 @@ USER_CHARGES
     57 O6          19.7370   -11.4000    -1.6580 O.co2     1  UNK        -1.2593
     58 O7          19.7870   -11.6320     0.8040 O.co2     1  UNK        -1.2593
     59 O8          19.3700    -9.4020    -0.2290 O.co2     1  UNK        -1.2593
-
 @<TRIPOS>BOND
      1      1      2     1
      2      1      4     1

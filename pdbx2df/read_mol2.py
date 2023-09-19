@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import os
 import warnings
+from collections import defaultdict
 
 import pandas as pd  # type: ignore
 
-IMPLEMENTED_MOL2_CATS = ["ATOM", "MOLECULE", "BOND"]
+IMPLEMENTED_MOL2_CATS = ["ATOM", "MOLECULE", "BOND", "HEADER"]
 """MOL2 categories that are currently implemented."""
 
 
@@ -54,7 +55,7 @@ def read_mol2(
         mol2_file(required): file name for a PDB file.
 
         category_names (optional): a list of categories as to the ``.mol2`` file format.
-            If ``None``, [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``] is used.
+            If ``None``, [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``, ``'HEADER'``] is used.
             Defaults to **None**.
 
     Returns:
@@ -62,11 +63,11 @@ def read_mol2(
 
     Raises:
         NotImplementedError: if ``category_names`` not a subset of
-            [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``]
+            [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``, ``'HEADER'``]
     """
     data: dict[str, pd.DataFrame] = {}
     if category_names is None:
-        category_names = ["ATOM", "MOLECULE", "BOND"]
+        category_names = ["ATOM", "MOLECULE", "BOND", "HEADER"]
     for category_name in category_names:
         if category_name not in IMPLEMENTED_MOL2_CATS:
             implemented = ", ".join(IMPLEMENTED_MOL2_CATS)
@@ -78,16 +79,20 @@ def read_mol2(
             )
         data[category_name] = pd.DataFrame()
 
-    category_block_lines: dict[str, list] = {}
+    category_block_lines: dict[str, list] = defaultdict(list)
     with open(mol2_file, "r", encoding="utf-8") as mol_f:
         line = mol_f.readline()
         while line:
-            if line.startswith("@<TRIPOS>"):
+            if line.startswith("#"):
+                category_name = "HEADER"
+                line = line.lstrip("#").strip()
+                if line:
+                    category_block_lines[category_name].append(tuple(line.split(": ")))
+            elif line.startswith("@<TRIPOS>"):
                 category_name = line.strip()[9:]
                 if category_name not in category_names:
                     line = mol_f.readline()
                     continue
-                category_block_lines[category_name] = []
                 line = mol_f.readline()
                 while line and line != "\n" and line[0] != "@":
                     category_block_lines[category_name].append(
@@ -120,8 +125,44 @@ def read_mol2(
             data[category_name] = _set_bond_df_dtypes(data[category_name])
         elif category_name == "MOLECULE":
             data[category_name] = _get_molecule_df(category_block_lines[category_name])
+        elif category_name == "HEADER":
+            data[category_name] = _get_header_df(category_block_lines[category_name])
 
     return data
+
+
+def _get_header_df(header_lines: list[tuple]) -> pd.DataFrame:
+    """Turns the ``HEADER`` lines into a ``Pandas DataFrame``.
+    The ``HEADER`` lines are those starting with one or multiple ``#`` symbols.
+
+    Args:
+        header_lines (required): a list of tuples corresponding to
+            each line's content. Tuples are generate by splitting the lines by ``:``.
+
+    Returns:
+        ``Pandas DataFrame`` of The ``HEADER`` category
+    """
+    header_attrs: dict[str, list[str]] = defaultdict(list)
+    n_no_name = 0
+    for header_line in header_lines:
+        header_line = tuple([i.strip() for i in header_line])
+        if len(header_line) == 1:
+            header_attrs[f"info_{n_no_name}"] = [header_line[0]]
+        elif len(header_line) == 2:
+            header_attrs[header_line[0]] = [header_line[1]]
+        else:
+            message = f"The line {header_line} has > 2 items separated"
+            message += " by ':'. pdbx2df uses the first as column name"
+            message += " and concatenate the rest as value."
+            warnings.warn(
+                message,
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            value = ";".join(header_line[1:])
+            header_attrs[header_line[0]] = [value]
+
+    return pd.DataFrame(header_attrs)
 
 
 def _get_molecule_df(molecule_lines: list[tuple]) -> pd.DataFrame:
