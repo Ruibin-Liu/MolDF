@@ -225,3 +225,23 @@ You can read it as:
 
 .. _D00217: http://www.mypresto5.com/ligandbox/cgi-bin/liginf.cgi?id=D00217&source=KEGG_DRUG
 .. _Tylenol: https://en.wikipedia.org/wiki/Tylenol_(brand)
+
+7. Write a MOL2 file
+--------------------
+
+You might need to do some manipulation to a `mol2` file and then write back. One `example`_ is `ParmEd`_ needs
+the input `mol2` file grouping the atoms in a same residue (can be accessed by the `subst_name` column) together if there
+are many, so that it can build the correct topology of the system. One solution is to read the `mol2` file, group
+the residues by `subst_name`, and then write back.
+
+.. code-block:: python3
+
+   >>> from pdbx2df import read_mol2, write_mol2
+   >>> mol2 = read_mol2(mol2_file='glutathione.mol2')
+   >>> mol2['ATOM'].sort_values(by=['subst_name', 'atom_id'], inplace=True)
+   >>> write_mol2(mol2, file_name='glutathione_pdbx2df.mol2')
+
+In the `glutathione_pdbx2df.mol2` file, the atoms belonging to the same residue are together.
+
+.. _ParmEd: https://github.com/ParmEd
+.. _example: https://github.com/ParmEd/ParmEd/issues/1029

@@ -38,7 +38,6 @@ PDBx Writer
    :members:
    :private-members:
 
-
 PDB Writer
 -------------------------
 
@@ -46,6 +45,12 @@ PDB Writer
    :members:
    :private-members:
 
+MOL2 Writer
+-------------------------
+
+.. automodule:: pdbx2df.write_mol2
+   :members:
+   :private-members:
 
 PDBx Line Splitter
 --------------------------

@@ -33,8 +33,9 @@ def test_write_mol2():
         "r",
         encoding="utf-8",
     ) as wf:
-        next(cf)
-        next(wf)
+        for _ in range(4):
+            next(cf)
+            next(wf)
         cf_lines = cf.readlines()
         wf_lines = wf.readlines()
         assert cf_lines == wf_lines

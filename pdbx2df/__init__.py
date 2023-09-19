@@ -19,6 +19,7 @@ from pdbx2df.read_mol2 import read_mol2
 from pdbx2df.read_pdb import read_pdb
 from pdbx2df.read_pdbx import read_pdbx
 from pdbx2df.split_line import split_line
+from pdbx2df.write_mol2 import write_mol2
 from pdbx2df.write_pdb import write_pdb
 from pdbx2df.write_pdbx import write_pdbx
 
@@ -31,6 +32,7 @@ __all__ = [
     "read_pdb",
     "write_pdb",
     "read_mol2",
+    "write_mol2",
     "split_line",
     "AMINO_ACIDS",
     "ELEMENT_MASSES",
