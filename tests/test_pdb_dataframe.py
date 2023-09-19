@@ -153,13 +153,16 @@ def test_property_getter():
     assert pdb_df.n_segments == 1, "Number of segments not correct."
 
     assert pdb_df.n_models == 1, "Number of models not correct."
-
     assert np.allclose(
         pdb_df.center_of_geometry, [4.1473727, 15.076957, 10.4202175]
     ), "Center of geometry not correct."
 
     assert np.allclose(
-        pdb_df.center_of_mass, [0.00095357, 0.00347233, 0.00239574]
+        pdb_df.center_of_mass, [4.1451645, 15.094206, 10.414299]
+    ), "Center of mass not correct."
+
+    assert (
+        abs(pdb_df.radius_of_gyration - 741.9655564097923) <= 0.0000001
     ), "Center of mass not correct."
 
     assert np.allclose(

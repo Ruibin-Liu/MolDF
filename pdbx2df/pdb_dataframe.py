@@ -390,7 +390,18 @@ class PDBDataFrame(pd.DataFrame):
         """Gets the center of mass as a ``(3, )`` ``np.ndarray``."""
         masses = self.atoms.get_masses()
         masses = masses / masses.sum()
-        return np.mean(self.coords.values * masses[:, None], axis=0)
+        return np.sum(self.coords.values * masses[:, None], axis=0)
+
+    @property
+    @functools.lru_cache()
+    def radius_of_gyration(self) -> np.ndarray:
+        """Gets the radius of gyration as a ``(3, )`` ``np.ndarray``."""
+        com = self.center_of_mass
+        com_t = (com[0], com[1], com[2])  # type: ignore
+        dist_to_com = PDBDataFrame.get_distance_matrix(self.atoms, com_t, use_r2=True)
+        masses = self.atoms.get_masses()
+        masses = masses / masses.sum()
+        return np.sum(dist_to_com * masses[:, None], axis=0)[0]
 
     @functools.lru_cache()
     def get_masses(self) -> np.ndarray:
