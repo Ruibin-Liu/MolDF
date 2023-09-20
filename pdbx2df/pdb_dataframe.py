@@ -449,7 +449,9 @@ class PDBDataFrame(pd.DataFrame):
         Raises:
             ValueError: if dimensionalities mismatch among ``self``, ``other``,
                 ``weights``, and ``by_selections`` if they are not ``None``;
-                or ``atom_number`` in ``self`` are not unique.
+                or ``atom_number`` s in ``self`` are not unique.
+            TypeError: if ``other``, ``weights``, and ``selection`` have unsupported
+                types.
         """
         result: list = []
 
@@ -465,7 +467,6 @@ class PDBDataFrame(pd.DataFrame):
                     other_model = self.nmr_models(int(other_index))
                     other_coords_list.append(other_model.coords.values)
         else:
-            all_models = [0]
             first_model = self
             if len(first_model.atom_number.unique()) != len(first_model):
                 raise ValueError("'atom_number's in 'self' are not unique.")
@@ -489,7 +490,7 @@ class PDBDataFrame(pd.DataFrame):
                     raise ValueError(message)
                 other_coords_list.append(other)
             else:
-                raise ValueError(f"Unsupported type {type(other)} for 'other'.")
+                raise TypeError(f"Unsupported type {type(other)} for 'other'.")
 
         first_coords = first_model.coords.values
         align_weights = np.ones(n_atoms)
@@ -499,7 +500,7 @@ class PDBDataFrame(pd.DataFrame):
                 if not isinstance(selection, (type(self), list)):
                     message = f"'selection' type is {type(selection)}, but list"
                     message += " or PDBDataFrame is expected."
-                    raise ValueError(message)
+                    raise TypeError(message)
                 n_selection = len(selection)
                 if len(selection) > n_atoms:
                     message = f"'selection' length is {len(selection)}, "
@@ -514,7 +515,7 @@ class PDBDataFrame(pd.DataFrame):
                     if not isinstance(weights, list):
                         message = f"'weights' type is {type(weights)}, but list"
                         message += " is expected."
-                        raise ValueError(message)
+                        raise TypeError(message)
                     if len(weights) != n_selection:
                         message = f"'weights' length is {len(weights)}, "
                         message += "not equal to the selection length"
@@ -525,7 +526,7 @@ class PDBDataFrame(pd.DataFrame):
                 if not isinstance(weights, list):
                     message = f"'weights' type is {type(weights)}, but list"
                     message += " is expected."
-                    raise ValueError(message)
+                    raise TypeError(message)
                 if len(weights) != n_atoms:
                     message = f"'weights' length is {len(weights)}, "
                     message += "not equal to the number of atoms"
