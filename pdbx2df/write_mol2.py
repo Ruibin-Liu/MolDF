@@ -31,14 +31,12 @@ def write_mol2(
 
     Args:
         mol2 (required): a ``dict`` of ``Pandas DataFrame`` s to write.
-
         file_name (optional): file name to write a MOL2 file. If ``None``,
             ``pdbx2df_output.mol2`` will be used as the file name.
             Defaults to **None**.
 
     Raises:
         TypeError: if ``mol2`` is not a valid dict of ``DataFrame``.
-
         ValueError: if the ``mol2`` contains other than supported categories.
     """
     if not file_name:

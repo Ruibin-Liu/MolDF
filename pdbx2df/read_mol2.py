@@ -53,7 +53,6 @@ def read_mol2(
 
     Args:
         mol2_file(required): file name for a PDB file.
-
         category_names (optional): a list of categories as to the ``.mol2`` file format.
             If ``None``, [``'ATOM'``, ``'MOLECULE'``, ``'BOND'``, ``'HEADER'``] is used.
             Defaults to **None**.

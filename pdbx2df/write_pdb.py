@@ -33,17 +33,14 @@ def write_pdb(
 
     Args:
         pdb (required): a ``dict`` of ``Pandas DataFrame`` s to write.
-
         file_name (optional): file name to write a PDB file. If ``None``,
             ``pdbx2df_output.pdb`` will be used as the file name.
             Defaults to **None**.
-
         allow_chimera (optional): whether to allow writing to Chimera-formatted PDB
             files. Defaults to **False**.
 
     Raises:
         TypeError: if ``pdb`` is not a valid dict of ``DataFrame``.
-
         ValueError: if the ``pdb`` contains other than supported categories.
     """
     if not file_name:

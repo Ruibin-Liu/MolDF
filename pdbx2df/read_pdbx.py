@@ -49,17 +49,13 @@ def read_pdbx(
     Args:
         pdb_id (optional): PDB/Uniprot ID. Required if ``pdbx_file`` is ``None``.
             Defaults to **None**.
-
         pdbx_file (optional): file name for a PDBx/mmCIF file. Used over `pdb_id`.
             Defaults to **None**.
-
         category_names (optional): a list of categories in the mmCIF file format.
             If ``None``, ``all`` is used and all categories will be processed.
             Defaults to **None**.
-
         save_pdbx_file (optional): whether to save the fetched PDBx file from RCSB
             to ``pdbx_file_dir``. Defaults to **False**.
-
         pdbx_file_dir (optional): directory to save fetched PDBx files. If ``None`` but
             ``save_pdbx_file`` is ``True``, the current working directory is used.
             Defaults to **None**.
@@ -71,7 +67,6 @@ def read_pdbx(
         ValueError: if none of ``pdb_id`` or ``pdbx_file`` is provided, or if ``pdb_id``
             is given but cannot the PDB file cannot be downloaded from RCSB, or the
             PDB file is corrupted like no end-line symbol, or some content is irregular.
-
         FileNotFoundError: if ``pdbx_file`` cannot be found.
     """
     data: dict[str, pd.DataFrame] = {}

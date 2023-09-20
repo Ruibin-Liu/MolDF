@@ -23,7 +23,6 @@ def write_pdbx(
 
     Args:
         pdbx (required): a ``dict`` of ``Pandas DataFrame`` s to write.
-
         file_name (optional): file name to write a PDBx file. If ``None``,
             ``pdbx2df_output.cif`` will be used as the file name.
             Defaults to **None**.

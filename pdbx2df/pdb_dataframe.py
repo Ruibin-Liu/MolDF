@@ -46,16 +46,12 @@ class PDBDataFrame(pd.DataFrame):
     Args:
         *args: all ``pd.DataFrame`` positional arguments. For example, the
             ``_atom_site`` dataframe returned by reading a PDB file.
-
         pdb_format (optional): PDB format in the underlying provided data.
             If ``None``, ``PDB`` is assumed. Defaults to **None**.
-
         use_squared_distance (optional): whether to use squared distance
             when calculating distance matrix. Defaults to **True**.
-
         use_square_form (optional): whether to use a square matrix
             for the distance matrix. Defaults to **False**.
-
         **kwargs: all ``pd.DataFrame`` acceptable keyword arguments.
 
     Returns:
@@ -563,9 +559,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             names (required): a list of ``record_name`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
         Returns:
             sub ``PDBDataFrame``
         """
@@ -584,12 +578,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             numbers (required): one or a list of ``atom_number`` s.
-
             relation (optional): ``atom_number`` relationship to ``numbers``.
                 If ``numbers`` is an integer, it has to be one of ``<``, ``<=``, ``=``,
                 ``>=``, and ``>``. If ``None``, ``<=`` is used. Ignored if a list of
                 integers are provided to ``numbers``. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -612,13 +604,10 @@ class PDBDataFrame(pd.DataFrame):
             names (required): a list of ``atom_name`` s whose ``element_symbols`` have
                 only one character. Atoms in common residues and ligands should be
                 provide here like ``C, H, O, N, S, P, F``.
-
             names_2c (optional): a list of ``atom_name`` s whose ``element_symbols``
                 have two characters like ion (``FE``) and chloride (``CL``).
                 Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             suppress_warning: whether to suppress the warning message about
                 possible conflicts between ``names`` and ``names_2c``.
                 Defaults to **False**.
@@ -660,7 +649,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             locs (required): a list of ``alt_loc`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -689,7 +677,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             ids (required): a list of ``chain_id`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -709,12 +696,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             numbers (required): one or a list of ``residue_number`` s.
-
             relation (optional): ``residue_number`` relationship to ``numbers``.
                 If ``numbers`` is an integer, it has to be one of ``<``, ``<=``, ``=``,
                 ``>=``, and ``>``. If ``None``, '<=' is used. Ignored if a list of
                 integers are provided to ``numbers``. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -729,7 +714,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             codes (required): a list of ``insertion`` codes.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -750,13 +734,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             value (required): value to select ``x_coord`` s.
-
             relation (optional): ``x_coord`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs(x_coord - value)`` <= ``epsilon``
                 are selected when ``invert`` = ``False``. Defaults to **0.01**.
 
@@ -778,13 +759,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             value (required): value to select ``y_coord`` s.
-
             relation (optional): ``y_coord`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs(y_coord - value)`` <= ``epsilon``
                 are selected when ``invert`` = ``False``. Defaults to **0.01**.
 
@@ -810,9 +788,7 @@ class PDBDataFrame(pd.DataFrame):
             relation (optional): ``z_coord`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs(z_coord - value)`` <= ``epsilon``
                 are selected when ``invert`` = ``False``. Defaults to **0.01**.
 
@@ -834,13 +810,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             value (required): value to select ``occupancy`` s.
-
             relation (optional): ``occupancy`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs(occupancy - value)`` <= ``epsilon``
                 are selected when ``invert`` = ``False``. Defaults to **0.01**.
 
@@ -862,13 +835,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             value (required): value to select ``b_factor`` s.
-
             relation (optional): ``b_factor`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used. Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs(b_factor - value)`` <= ``epsilon``
                 are selected when ``invert`` = ``False``. Defaults to **0.01**.
 
@@ -884,7 +854,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             ids (required): a list of ``segment_id`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -899,7 +868,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             symbols (required): a list of ``element_symbol`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -915,7 +883,6 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             charges (required): a list of ``charge`` s.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -934,13 +901,11 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             models (required): one or a list of ``nmr_model`` ids.
-
             relation (optional): ``nmr_model`` relationship to ``models``.
                 If ``models`` is an integer, it has to be one of ``'<'``, ``'<='``,
                 ``'='``, ``'>='``, and ``'>'``. If ``None``, ``'<='`` is used.
                 Ignored if a list of integers are provided to ``models``.
                 Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -963,9 +928,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             other: the other group's coordinate(s).
-
             cut_off: the distance cutoff to filter.
-
             to: if ``other`` is a group atoms, using which method to determine
                 whether the atoms meet the cut_off distance. If None, ``COM`` or
                 center of mass is used if ``other`` is ``PDBDataFrame``, and ``COG``
@@ -982,7 +945,6 @@ class PDBDataFrame(pd.DataFrame):
                     ``any``:
                         whether any of the pair-distances meets the ``cut_off``
                         distance criteria.
-
             invert: whether to invert the selection. Defaults to **False**.
 
         Returns:
@@ -1101,25 +1063,20 @@ class PDBDataFrame(pd.DataFrame):
         Args:
             value (required): value(s) to select by the column given by the
                 ``num_col_name`` input.
-
             num_col_name (required): one of ``atom_number``, ``residue_number``,
                 ``x_coord``, ``y_coord``, or ``z_coord``, ``occupancy``, ``b_factor``,
                 and  ``nmr_model``. Note: the ``charge`` column is not numerical by
                 ``PDB`` format.
-
             relation (optional): ``x/y/z_coord`` relationship to ``value``.
                 It has to be one of ``'<'``, ``'<='``, ``'='``, ``'>='``, and ``'>'``.
                 If ``None``, ``'<='`` is used.
                 Ignored if a list of integers are provided to ``value``.
                 Defaults to **None**.
-
             invert (optional): whether to invert the selection. Defaults to **False**.
-
             epsilon (optional): atoms ``abs``(``num_col_value`` - ``value``) <=
                 ``epsilon`` are selected when ``invert`` = ``False`` and
                 ``relation`` = ``'='``. Ignored if a list of integers are provided to
                 ``value``. Defaults to **0.01**.
-
             suppress_warning (optional): whether to suppress warnings.
                 Defaults to **False**.
 
@@ -1244,13 +1201,10 @@ class PDBDataFrame(pd.DataFrame):
 
         Args:
             pdb_df (required): a ``PDBDataFrame`` object.
-
             other_data (optional): the coordinates of to calculate the distances
                 against. Defaults to **None**.
-
             use_r2 (optional): whether to use r^2 or r for distance matrix.
                 Defaults to **True**.
-
             square_form (optional): whether to output a square form of the
                 density matrix. If two ``PDBDataFrame``s are different or
                 ``other_data`` is not a ``PDBDataFrame``, ``square_form`` is ignored.

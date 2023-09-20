@@ -56,10 +56,8 @@ def read_pdb(
     Args:
         pdb_id (optional): PDB/Uniprot ID. Required if ``pdb_file`` is ``None``.
             Defaults to **None**.
-
         pdb_file (optional): file name for a PDB file. Used over `pdb_id`.
             Defaults to **None**.
-
         category_names (optional): a list of categories similar to the mmCIF format.
             If ``None``, ``_atom_site`` is used.
             To be consistent with the PDBx format, the following category names are
@@ -71,17 +69,13 @@ def read_pdb(
                 2. ``_seq_res``: ``SEQRES`` lines.
 
             Defaults to **None**.
-
         save_pdb_file (optional): whether to save the fetched PDB file from RCSB
             to ``pdb_file_dir``. Defaults to **True**.
-
         pdb_file_dir (optional): directory to save fetched PDB files. If ``None`` but
             ``save_pdb_file`` is ``True``, the current working directory is used.
             Defaults to **None**.
-
         allow_chimera (optional): whether to allow Chimera-formatted PDB files.
             Defaults to **True**.
-
         need_ter_lines (optional): whether to read the ``TER`` lines into the
             ``DataFrame``. Defaults to **True**.
 
@@ -91,9 +85,7 @@ def read_pdb(
     Raises:
         ValueError: if none of ``pdb_id`` or ``pdbx_file`` is provided, or if ``pdb_id``
             is given but cannot the PDB file cannot be downloaded from RCSB,
-
         NotImplementedError: if `category_names` not a subset of allowed names.
-
         FileNotFoundError: if ``pdbx_file`` cannot be found.
     """
     data: dict[str, pd.DataFrame] = {}
@@ -276,13 +268,10 @@ def _split_atom_line(
 
     Args:
         line (required): A ``ATOM``, ``HETATM``, or ``TER`` line.
-
         nmr_model (optional): the NMR model number for the line; ``-1`` means
             not an NMR model. Defaults to **-1**.
-
         allow_chimera (optional): try to parse as a Chimera-formatted PDB file.
             Defaults to **True**
-
         is_ter_line (optional): whether the line starts with ``TER``.
             Defaults to **False**.
 
