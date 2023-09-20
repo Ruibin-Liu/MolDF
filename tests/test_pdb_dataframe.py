@@ -516,7 +516,6 @@ def test_atom_selections():
     sub_df = pdb_df.segment_ids(["    "])
     expected = pdb_df
     assert sub_df == expected, "segment_ids selection failed."
-    assert len(pdb_df.segment_ids([""])) == 0, "Segment ID should be four spaces."
 
     # element_symbol
     sub_df = pdb_df.element_symbols(["O", "S"])
@@ -527,7 +526,6 @@ def test_atom_selections():
     sub_df = pdb_df.charges(["  "])
     expected = pdb_df
     assert sub_df == expected, "charges selection failed."
-    assert len(pdb_df.charges([""])) == 0, "Charge should be 2 spaces."
 
     # distances
     first_atom = pdb_df.head(1)

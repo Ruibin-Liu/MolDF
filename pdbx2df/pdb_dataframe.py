@@ -33,8 +33,30 @@ from typing_extensions import Self
 
 from .constants import AMINO_ACIDS, ELEMENT_MASSES
 
-"""dict[str, str], turn 3-, 2-, and 1-letter residue codes to 1-letter codes."""
 RESIDUE_CODES = AMINO_ACIDS
+"""dict[str, str], turn 3-, 2-, and 1-letter residue codes to 1-letter codes."""
+
+
+PDBX_COLS = {
+    "record_name": "group_PDB",
+    "atom_number": "id",
+    "atom_name": "label_atom_id",
+    "alt_loc": "label_alt_id",
+    "residue_name": "label_comp_id",
+    "chain_id": "label_asym_id",
+    "residue_number": "label_seq_id",
+    "insertion": "pdbx_PDB_ins_code",
+    "x_coord": "Cartn_x",
+    "y_coord": "Cartn_y",
+    "z_coord": "Cartn_z",
+    "occupancy": "occupancy",
+    "b_factor": "B_iso_or_equiv",
+    "segment_id": "label_entity_id",
+    "element_symbol": "type_symbol",
+    "charge": "pdbx_formal_charge",
+    "nmr_model": "pdbx_PDB_model_num",
+}
+"""dict[str, str], PDB and mmCIF column name dictionary."""
 
 
 class PDBDataFrame(pd.DataFrame):
@@ -93,6 +115,8 @@ class PDBDataFrame(pd.DataFrame):
         self.pdb_format: str | None = pdb_format
         if self.pdb_format is None:
             self.pdb_format = "PDB"
+        if self.pdb_format.lower() in ["mmcif", "pdbx"]:
+            self._pdbx_to_pdb()
         self._use_squared_distance: bool = use_squared_distance
         self._use_square_form: bool = use_square_form
         self._hash_random_state: int = 0
@@ -119,6 +143,19 @@ class PDBDataFrame(pd.DataFrame):
     def __eq__(self, other) -> bool:
         """Uses head X coords to compare; for distance matrix calculation cache."""
         return self.__hash__() == other.__hash__()
+
+    def _pdbx_to_pdb(self, keep_original: bool = False):
+        """Converts PDBx '_atom_site' DataFrame to PDB format.
+
+        Args:
+            keep_original (optional): whether to keep the original columns in the PDBx
+                '_atom_site' DataFrame. Defaults to **False**.
+        """
+        for pdb_name, pdbx_name in PDBX_COLS.items():
+            self[pdb_name] = self[pdbx_name]
+        if not keep_original:
+            drop_columns = [col for col in self.columns if col not in PDBX_COLS.keys()]
+            self.drop(columns=drop_columns, inplace=True)
 
     @property
     def RESIDUE_CODES(self) -> dict[str, str]:
@@ -564,7 +601,8 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
-        names = [name.ljust(6) for name in names]
+        if self.pdb_format.upper() == "PDB":  # type: ignore
+            names = [name.ljust(6) for name in names]
         if invert:
             return self[~self.record_name.isin(names)]
         return self[self.record_name.isin(names)]
@@ -616,30 +654,35 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
-        atom_name_strings: list[str] = []
-        for name in names:
-            if len(name) == 4:
-                atom_name_strings.append(name)
-            else:
-                atom_name_strings.append(f" {name}".ljust(4))
-            if len(name) == 2 and f"{name[0]}{name[1].lower()}" in self.ELEMENT_MASSES:
-                if f" {name[0]}" not in self.ELEMENT_MASSES:
+        atom_name_strings = names
+        if self.pdb_format.upper() == "PDB":  # type: ignore
+            atom_name_strings = []
+            for name in names:
+                if len(name) == 4:
+                    atom_name_strings.append(name)
+                else:
+                    atom_name_strings.append(f" {name}".ljust(4))
+                if (
+                    len(name) == 2
+                    and f"{name[0]}{name[1].lower()}" in self.ELEMENT_MASSES
+                ):
+                    if f" {name[0]}" not in self.ELEMENT_MASSES:
+                        atom_name_strings.append(f"{name}".ljust(4))
+                        # eg 'MG' where ' M' is not a legal element in self.ELEMENT_MASSES.
+                        continue
+                    if suppress_warning:
+                        continue
+                    message = f"Atom name {name} is an atom of element {name[0]} "
+                    message += f"but not element {name[0]}{name[1].lower()}."
+                    message += "If you want the latter, put it in the 'names_2c' list."
+                    warnings.warn(
+                        message,
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
+            if names_2c is not None:
+                for name in names_2c:
                     atom_name_strings.append(f"{name}".ljust(4))
-                    # eg 'MG' where ' M' is not a legal element in self.ELEMENT_MASSES.
-                    continue
-                if suppress_warning:
-                    continue
-                message = f"Atom name {name} is an atom of element {name[0]} "
-                message += f"but not element {name[0]}{name[1].lower()}."
-                message += "If you want the latter, put it in the 'names_2c' list."
-                warnings.warn(
-                    message,
-                    RuntimeWarning,
-                    stacklevel=2,
-                )
-        if names_2c is not None:
-            for name in names_2c:
-                atom_name_strings.append(f"{name}".ljust(4))
 
         if invert:
             return self[~self.atom_name.isin(atom_name_strings)]
@@ -669,9 +712,11 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        if self.pdb_format.upper() == "PDB" and self.is_chimera:  # type: ignore
+            names = [(name.strip() + " ").upper().rjust(4) for name in names]
         if invert:
-            return self[~self.residue_name.str.strip().isin(names)]
-        return self[self.residue_name.str.strip().isin(names)]
+            return self[~self.residue_name.isin(names)]
+        return self[self.residue_name.isin(names)]
 
     def chain_ids(self, ids: list[str], invert: bool = False) -> Self:
         """Filter by ``chain_id``.
@@ -860,6 +905,8 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        if self.pdb_format.upper() == "PDB":  # type: ignore
+            ids = [i.strip().ljust(4) for i in ids]
         if invert:
             return self[~self.segment_id.isin(ids)]
         return self[self.segment_id.isin(ids)]
@@ -874,7 +921,8 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
-        symbols = [symbol.upper().rjust(2) for symbol in symbols]
+        if self.pdb_format.upper() == "PDB":  # type: ignore
+            symbols = [symbol.strip().upper().rjust(2) for symbol in symbols]
         if invert:
             return self[~self.element_symbol.isin(symbols)]
         return self[self.element_symbol.isin(symbols)]
@@ -891,6 +939,8 @@ class PDBDataFrame(pd.DataFrame):
 
         Notes: ``charge`` is ``2-char`` string in the PDB specifications.
         """
+        if self.pdb_format.upper() == "PDB":  # type: ignore
+            charges = [charge.strip().rjust(2) for charge in charges]
         if invert:
             return self[~self.charge.isin(charges)]
         return self[self.charge.isin(charges)]
