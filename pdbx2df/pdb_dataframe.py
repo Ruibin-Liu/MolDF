@@ -428,7 +428,7 @@ class PDBDataFrame(pd.DataFrame):
         multiple ``nmr_model`` s or 2) two sets of coordinates in two ``PDBDataFrames``.
 
         Args:
-            other (optional): the other ``PDBDataFrame`` or (N, 3) ``numpy.array``
+            other (optional): the other ``PDBDataFrame`` or (N, 3) ``numpy.ndarray``
                 to calculate RMSD against. If ``None``, ``self`` should contain at least
                 two sets of coordinates (``nmr_model`` has >= 2 unique values).
                 Defaults to **None**.
@@ -437,7 +437,7 @@ class PDBDataFrame(pd.DataFrame):
                 Defaults to **True**.
             weights (optional): a list of weights for all the atoms in ``selection`` to
                 do structure alignment. If ``None``, all coordinates in the
-                ``selection`` have the same weights. Defaults to **None**.
+                ``selection`` or ``self`` have the same weights. Defaults to **None**.
             selection (optional): a list of ``atom_number`` s in ``self`` or a
                 PDBDataFrame after the filtering methods.
                 If ``None``, all coordinates in ``self`` are
