@@ -3,12 +3,12 @@
 From this version on, changelog is kept for each new version, compared to the previous version.
 
 ## New features
-- Parsing `mol2` file header lines starting with `#`.
-- `radius_of_gyration` can be accessed as a property.
-- `rmsd` method added.
+- Parsing `mol2` file header lines starting with `#` in `read_mol2`.
+- `radius_of_gyration` can be accessed as a property in `PDBDataFrame`.
+- `rmsd` method added in `PDBDataFrame`.
 
 ## Fixes
-- corrected `center_of_mass` calculation .
+- Corrected `center_of_mass` calculation in `PDBDataFrame`.
 
 ## Docs
-- Cleaned up empty lines in function and method's docstring.
+- Cleaned up empty lines in all function and method's docstrings.
