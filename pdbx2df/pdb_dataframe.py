@@ -448,7 +448,7 @@ class PDBDataFrame(pd.DataFrame):
 
         Raises:
             ValueError: if dimensionalities mismatch among ``self``, ``other``,
-                ``weights``, and ``by_selections`` if they are not ``None``;
+                ``weights``, and ``selection`` if they are not ``None``;
                 or ``atom_number`` s in ``self`` are not unique.
             TypeError: if ``other``, ``weights``, and ``selection`` have unsupported
                 types.
