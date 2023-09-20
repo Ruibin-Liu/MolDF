@@ -28,6 +28,7 @@ from collections.abc import Iterable
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 from scipy.spatial.distance import cdist, pdist, squareform  # type: ignore
+from scipy.spatial.transform import Rotation  # type: ignore
 from typing_extensions import Self
 
 from .constants import AMINO_ACIDS, ELEMENT_MASSES
@@ -419,6 +420,143 @@ class PDBDataFrame(pd.DataFrame):
             use_r2=self.use_squared_distance,
             square_form=self.use_square_form,
         )
+
+    def rmsd(
+        self,
+        other: Self | np.ndarray | None = None,
+        align: bool = True,
+        weights: list | None = None,
+        selection: Self | list | None = None,
+    ) -> list | float:
+        """Calculates RMSD 1) among sets of coordinates in one ``PDBDataFrame`` with
+        multiple ``nmr_model`` s or 2) two sets of coordinates in two ``PDBDataFrames``.
+
+        Args:
+            other (optional): the other ``PDBDataFrame`` or (N, 3) ``numpy.array``
+                to calculate RMSD against. If ``None``, ``self`` should contain at least
+                two sets of coordinates (``nmr_model`` has >= 2 unique values).
+                Defaults to **None**.
+            align (optional): whether to align the structures before calculating RMSD.
+                If ``False``, the ``weights`` and ``selection`` keywords are ignored.
+                Defaults to **True**.
+            weights (optional): a list of weights for all the atoms in ``selection`` to
+                do structure alignment. If ``None``, all coordinates in the
+                ``selection`` have the same weights. Defaults to **None**.
+            selection (optional): a list of ``atom_number`` s in ``self`` or a
+                PDBDataFrame after the filtering methods.
+                If ``None``, all coordinates in ``self`` are
+                used for structure alignment. Defaults to **None**.
+
+        Returns:
+            RMSD or a list of RMSD's.
+
+        Raises:
+            ValueError: if dimensionalities mismatch among ``self``, ``other``,
+                ``weights``, and ``by_selections`` if they are not ``None``;
+                or ``atom_number`` in ``self`` are not unique.
+        """
+        result: list = []
+
+        other_coords_list: list = []
+        if "nmr_model" in self.columns and len(self.nmr_model.unique()) >= 2:
+            all_models = self.nmr_model.unique()
+            first_model = self.nmr_models(int(all_models[0]))
+            if len(first_model.atom_number.unique()) != len(first_model):
+                raise ValueError("'atom_number's in 'self' are not unique.")
+            n_atoms = len(first_model)
+            if other is None:
+                for other_index in all_models[1:]:
+                    other_model = self.nmr_models(int(other_index))
+                    other_coords_list.append(other_model.coords.values)
+        else:
+            all_models = [0]
+            first_model = self
+            if len(first_model.atom_number.unique()) != len(first_model):
+                raise ValueError("'atom_number's in 'self' are not unique.")
+            n_atoms = len(first_model)
+            if other is None:
+                message = "'self' has only one set of coordinates and 'other' "
+                message += "is not provided."
+                raise ValueError(message)
+                # message = "'other' is not a PDBDataFrame or np.ndarray instance "
+                # message += f"but a {type(other)}."
+                # raise ValueError(message)
+            elif isinstance(other, type(self)):
+                if (self.atom_number != other.atom_number).any():
+                    message = "'self' and 'other' have mismatched 'atom_number' values."
+                    raise ValueError(message)
+                other_coords_list.append(other.coords.values)
+            elif isinstance(other, np.ndarray):
+                if other.shape != (n_atoms, 3):
+                    message = f"'other' shape is {other.shape} but expected to be"
+                    message += f" ({n_atoms}, 3)."
+                    raise ValueError(message)
+                other_coords_list.append(other)
+            else:
+                raise ValueError(f"Unsupported type {type(other)} for 'other'.")
+
+        first_coords = first_model.coords.values
+        align_weights = np.ones(n_atoms)
+        if align:
+            if selection is not None:
+                align_weights = np.zeros(n_atoms)
+                if not isinstance(selection, (type(self), list)):
+                    message = f"'selection' type is {type(selection)}, but list"
+                    message += " or PDBDataFrame is expected."
+                    raise ValueError(message)
+                n_selection = len(selection)
+                if len(selection) > n_atoms:
+                    message = f"'selection' length is {len(selection)}, "
+                    message += f"larger than the number of atoms {n_atoms}."
+                    raise ValueError(message)
+                if isinstance(selection, type(self)):
+                    selection = self.atom_number.to_list()
+                mask = first_model.atom_number.isin(selection)
+                align_weights[mask] = 1.0
+
+                if weights is not None:
+                    if not isinstance(weights, list):
+                        message = f"'weights' type is {type(weights)}, but list"
+                        message += " is expected."
+                        raise ValueError(message)
+                    if len(weights) != n_selection:
+                        message = f"'weights' length is {len(weights)}, "
+                        message += "not equal to the selection length"
+                        message += f" {n_selection}."
+                        raise ValueError(message)
+                    align_weights[mask] = weights
+            elif weights is not None:
+                if not isinstance(weights, list):
+                    message = f"'weights' type is {type(weights)}, but list"
+                    message += " is expected."
+                    raise ValueError(message)
+                if len(weights) != n_atoms:
+                    message = f"'weights' length is {len(weights)}, "
+                    message += "not equal to the number of atoms"
+                    message += f" {n_atoms} without 'selection'."
+                    raise ValueError(message)
+                align_weights = weights
+
+        first_centered = False
+        for other_coords in other_coords_list:
+            if align:
+                if not first_centered:
+                    first_coords = first_coords - first_model.center_of_geometry
+                    first_centered = True
+                other_cog = np.mean(other_coords, axis=0)
+                other_coords = other_coords - other_cog
+                rot = Rotation.align_vectors(
+                    first_coords, other_coords, weights=align_weights
+                )[0]
+                other_coords = rot.apply(other_coords)
+
+            rms = np.sqrt(np.sum((first_coords - other_coords) ** 2) / n_atoms)
+            result.append(rms)
+
+        if len(result) == 1:
+            return result[0]
+
+        return result
 
     def record_names(self, names: list[str], invert: bool = False) -> Self:
         """Filter by ``record_name``.

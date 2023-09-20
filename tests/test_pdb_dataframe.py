@@ -8,6 +8,7 @@ import sys
 
 import numpy as np  # type: ignore
 import pytest
+from scipy.spatial.transform import Rotation  # type: ignore
 
 from pdbx2df.constants import ELEMENT_MASSES
 from pdbx2df.pdb_dataframe import RESIDUE_CODES, PDBDataFrame
@@ -314,6 +315,35 @@ def test_get_distance_matrix():
     message = "get_distance_matrix gets element [0, 0] wrong for distance matrix "
     message += "while using r for distance matrix to another PDBDataFrame."
     assert np.isclose(dis_matrix[0, 0], 2.194553), message
+
+
+def test_rmsd():
+    """Testing the rmsd method."""
+    file_path = [CFD, "test_files", "1G03.pdb"]
+    test_file = f"{os.sep}".join(file_path)
+    pdb = read_pdb(
+        pdb_file=test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+    )
+    df = pdb["_atom_site"]
+    pdb_df = PDBDataFrame(df)
+    m1 = pdb_df.nmr_models(1).coords.values
+    m2 = pdb_df.nmr_models(20).coords.values
+    expected_raw = np.sqrt(np.sum((m1 - m2) ** 2) / len(m1))
+    assert np.isclose(
+        expected_raw, pdb_df.rmsd(align=False)[-1]
+    ), "Unaligned RMSD between model 1 and 20 are different."
+
+    m1 = m1 - np.mean(m1, axis=0)
+    m2 = m2 - np.mean(m2, axis=0)
+    rot = Rotation.align_vectors(m1, m2)[0]
+    m2 = rot.apply(m2)
+    expected_aligned = np.sqrt(np.sum((m1 - m2) ** 2) / len(m1))
+    assert np.isclose(
+        expected_aligned, pdb_df.rmsd(align=True)[-1]
+    ), "Aligned RMSD between model 1 and 20 are different."
 
 
 def test_filter_num_col():
