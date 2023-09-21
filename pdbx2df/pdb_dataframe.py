@@ -266,7 +266,7 @@ class PDBDataFrame(pd.DataFrame):
             if self._ter_line_removed:
                 self._atoms = self
             else:
-                self._atoms = self[self.record_name.isin(["ATOM  ", "HETATM"])]
+                self._atoms = self.record_names(["ATOM  ", "HETATM"])
                 self._ter_line_removed = True
         return self._atoms
 
