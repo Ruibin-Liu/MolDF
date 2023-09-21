@@ -1,4 +1,4 @@
-# pdbx2df v0.6.6 (in-dev)
+# pdbx2df v0.6.6
 
 From this version on, changelog is kept for each new version, compared to the previous version.
 
@@ -13,3 +13,4 @@ From this version on, changelog is kept for each new version, compared to the pr
 
 ## Docs
 - Cleaned up empty lines in all function and method's docstrings.
+- Added a quick start section for calculating RMSD, radius of gyration, and distance matrix.

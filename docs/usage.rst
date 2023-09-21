@@ -245,3 +245,30 @@ In the `glutathione_pdbx2df.mol2` file, the atoms belonging to the same residue 
 
 .. _ParmEd: https://github.com/ParmEd
 .. _example: https://github.com/ParmEd/ParmEd/issues/1029
+
+8. RMSD, radius of gyration, and distance matrix
+------------------------------------------------
+
+In pdbx2df, it is very intuitive and convenient to do atom selection as shown above, thanks
+to the :ref:`PDBDataFrame <PDBDataFrame>` class. In fact, the class has more than that. We
+can use it to calculate RMSD, radius of gyration, and distance matrix easily.
+
+.. code-block:: python3
+
+     >>> from pdbx2df import read_pdb, PDBDataFrame
+     >>> pdb = read_pdb(pdb_id='1g03')
+     >>> df = pdb['_atom_site']
+     >>> df = PDBDataFrame(df)
+     >>> 1g03_rmsd = df.rmsd()  # 1g03_rmsd contains all RMSDs between NMR models 2-20 and 1
+     >>> model_1 = df.nmr_models(1)
+     >>> m1_rgyr = model_1.radius_of_gyration  # model 1's radius of gyration
+     >>> m1_dis_mat = model_1.distance_matrix  # model 1's distance matrix in condensed form
+
+Check the API reference for :ref:`PDBDataFrame <PDBDataFrame>` for more options in the `rmsd`
+method. For example, `align` can be set as `False` so that the calculated RMSD values are based
+on the original coordinates.
+
+For `distance_matrix`, we can set `df.use_squared_distance=False` and `df.use_square_form=True` so that
+the returned distance matrix is a truly squared matrix whose elements are distances, not distance
+squared values. The default settings can save computation time and RAM usage, recommended for large scale
+processing where squared distances are not required.
