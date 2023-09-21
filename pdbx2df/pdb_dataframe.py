@@ -101,6 +101,7 @@ class PDBDataFrame(pd.DataFrame):
         "_is_chimera",
         "_RESIDUE_CODES",
         "_ELEMENT_MASSES",
+        "_pdb_format",
     ]
 
     def __init__(
@@ -112,10 +113,10 @@ class PDBDataFrame(pd.DataFrame):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.pdb_format: str | None = pdb_format
-        if self.pdb_format is None:
-            self.pdb_format = "PDB"
-        if self.pdb_format.lower() in ["mmcif", "pdbx"]:
+        self._pdb_format: str | None = pdb_format
+        if self._pdb_format is None:
+            self._pdb_format = "PDB"
+        if self._pdb_format.lower() in ["mmcif", "pdbx"]:
             self._pdbx_to_pdb()
         self._use_squared_distance: bool = use_squared_distance
         self._use_square_form: bool = use_square_form
@@ -156,6 +157,15 @@ class PDBDataFrame(pd.DataFrame):
         if not keep_original:
             drop_columns = [col for col in self.columns if col not in PDBX_COLS.keys()]
             self.drop(columns=drop_columns, inplace=True)
+        self._pdb_format = "PDBx"
+        self = self[list(PDBX_COLS.keys())]
+
+    @property
+    def pdb_format(self) -> str:
+        """
+        The format of the current PDBDataFrame.
+        """
+        return self._pdb_format  # type: ignore
 
     @property
     def RESIDUE_CODES(self) -> dict[str, str]:
@@ -601,6 +611,7 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        names = [name.strip().upper() for name in names]
         if self.pdb_format.upper() == "PDB":  # type: ignore
             names = [name.ljust(6) for name in names]
         if invert:
@@ -654,7 +665,7 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
-        atom_name_strings = names
+        atom_name_strings = [name.strip().upper() for name in names]
         if self.pdb_format.upper() == "PDB":  # type: ignore
             atom_name_strings = []
             for name in names:
@@ -712,8 +723,9 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        names = [name.strip().upper() for name in names]
         if self.pdb_format.upper() == "PDB" and self.is_chimera:  # type: ignore
-            names = [(name.strip() + " ").upper().rjust(4) for name in names]
+            names = [(name + " ").upper().rjust(4) for name in names]
         if invert:
             return self[~self.residue_name.isin(names)]
         return self[self.residue_name.isin(names)]
@@ -905,8 +917,9 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        ids = [i.strip() for i in ids]
         if self.pdb_format.upper() == "PDB":  # type: ignore
-            ids = [i.strip().ljust(4) for i in ids]
+            ids = [i.ljust(4) for i in ids]
         if invert:
             return self[~self.segment_id.isin(ids)]
         return self[self.segment_id.isin(ids)]
@@ -921,8 +934,9 @@ class PDBDataFrame(pd.DataFrame):
         Returns:
             sub ``PDBDataFrame``
         """
+        symbols = [symbol.strip().upper() for symbol in symbols]
         if self.pdb_format.upper() == "PDB":  # type: ignore
-            symbols = [symbol.strip().upper().rjust(2) for symbol in symbols]
+            symbols = [symbol.rjust(2) for symbol in symbols]
         if invert:
             return self[~self.element_symbol.isin(symbols)]
         return self[self.element_symbol.isin(symbols)]
@@ -939,8 +953,9 @@ class PDBDataFrame(pd.DataFrame):
 
         Notes: ``charge`` is ``2-char`` string in the PDB specifications.
         """
+        charges = [charge.strip() for charge in charges]
         if self.pdb_format.upper() == "PDB":  # type: ignore
-            charges = [charge.strip().rjust(2) for charge in charges]
+            charges = [charge.rjust(2) for charge in charges]
         if invert:
             return self[~self.charge.isin(charges)]
         return self[self.charge.isin(charges)]
