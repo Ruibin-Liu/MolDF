@@ -1,16 +1,11 @@
-# pdbx2df v0.6.6
+# pdbx2df v0.6.7
 
-From this version on, changelog is kept for each new version, compared to the previous version.
+## Planned new features
 
-## New features
-- Parsing `mol2` file header lines starting with `#` in `read_mol2`.
-- `radius_of_gyration` can be accessed as a property in `PDBDataFrame`.
-- `rmsd` method added in `PDBDataFrame`.
-- Can feed `PDBDataFrame` with the PDBx `_atom_site` DataFrame now.
+[ ] Read and write `.xyz` files
+[ ] Support multiple molecule in `.mol2` files
+[ ] Write and read to `.jcsv` file for all types.
 
 ## Fixes
-- Corrected `center_of_mass` calculation in `PDBDataFrame`.
 
 ## Docs
-- Cleaned up empty lines in all function and method's docstrings.
-- Added a quick start section for calculating RMSD, radius of gyration, and distance matrix.
