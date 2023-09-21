@@ -8,4 +8,6 @@
 
 ## Fixes
 
+- Fixed the problem that `PDBDataFrame` `.atoms` failed for `PDBx` DataFrame.
+
 ## Docs
