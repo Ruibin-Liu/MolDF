@@ -1,9 +1,17 @@
-# pdbx2df v0.6.7
+# MolDf v0.7.0
 
-Last version under the name **pdbx2df**. Now it is renamed as **MolDF**.
+To install this version
 
-Future installation by `pip install pdbx2df` will install `moldf` as well.
+```
+pip install moldf
+```
 
-## Fixes
+## Rename
 
-- Fixed the problem that `PDBDataFrame` `.atoms` failed for `PDBx` DataFrame.
+The repo is renamed from `pdbx2df`.
+
+The last `pdbx2df` version was `0.6.7`.
+
+## Docs
+
+- Update docs for renaming.

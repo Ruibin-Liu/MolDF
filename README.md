@@ -1,22 +1,22 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Ruibin-Liu/pdbx2df/main/assets/logo_name.svg" width="400"><br>
+  <img src="https://raw.githubusercontent.com/Ruibin-Liu/MolDF/main/assets/logo_name.svg" width="400"><br>
 </div>
 
 -----------------
 
-# pdbx2df: molecular structure data processing and analysis with DataFrame
+# MolDF: molecular structure data processing and analysis with DataFrame
 
 
-![Tests](https://github.com/Ruibin-Liu/pdbx2df/actions/workflows/tests.yml/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/pdbx2df/badge/?version=latest)](https://pdbx2df.readthedocs.io/en/latest/?badge=latest)
+![Tests](https://github.com/Ruibin-Liu/MolDF/actions/workflows/tests.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/MolDF/badge/?version=latest)](https://moldf.readthedocs.io/en/latest/?badge=latest)
 ![Python](https://img.shields.io/badge/python-3.7-blue.svg)
-[![PyPI version](https://badge.fury.io/py/pdbx2df.svg)](https://badge.fury.io/py/pdbx2df)
+[![PyPI version](https://badge.fury.io/py/moldf.svg)](https://badge.fury.io/py/moldf)
 
 Many file formats are about different ways of integrating structured data blocks into a single file in that those blocks are related to each other in some way. The `PDBx` or `mmCIF` file format organizes structural biology data into `categories` and each category contains a structured data block which includes several `attributes`, and each attribute contains the same number of elements within a category. Those characteristics make a PDBx/mmCIF file naturally to be representable as a `Python dict` of `Pandas DataFrames`.
 
-Our `pdbx2df` package primarily parses a PDBx file (mmCIF file: <pdb_id>.cif) into a Python dict with PDBx category names as keys and contents belonging to the category as the corresponding values. Each category content is parsed as a Pandas DataFrame whose columns are the attribute names. On the other hand, we can write a dict of Pandas DataFrame(s) into a PDBx format in which the dict key(s) are used as category names, the DataFrame column names as attribute names, and the DataFrame row(s) as the corresponding record(s).
+Our `moldf` package primarily parses a PDBx file (mmCIF file: <pdb_id>.cif) into a Python dict with PDBx category names as keys and contents belonging to the category as the corresponding values. Each category content is parsed as a Pandas DataFrame whose columns are the attribute names. On the other hand, we can write a dict of Pandas DataFrame(s) into a PDBx format in which the dict key(s) are used as category names, the DataFrame column names as attribute names, and the DataFrame row(s) as the corresponding record(s).
 
-The old style `PDB` file format is not very well structured compared to the new PDBx file format. However, we can make `pdbx2df` support parsing a PDB file (pdb_id.pdb) into a Python dict of Pandas DataFrames similarly, although many 'blocks' need more post processing. As such, the lines starting with `ATOM`, `HETATM`, and `TER` are read into a category named `_atom_site` which corresponds to the same category in a mmCIF file. And for NMR models, all `ATOM`, `HETATM`, and `TER` lines are read into a single DataFrame but atoms in a NMR model has the same value in the `nmr_model` column which is determined by the number in the corresponding `MODEL` line. `SEQRES` lines are read into a category named `_seq_res`.
+The old style `PDB` file format is not very well structured compared to the new PDBx file format. However, we can make `moldf` support parsing a PDB file (pdb_id.pdb) into a Python dict of Pandas DataFrames similarly, although many 'blocks' need more post processing. As such, the lines starting with `ATOM`, `HETATM`, and `TER` are read into a category named `_atom_site` which corresponds to the same category in a mmCIF file. And for NMR models, all `ATOM`, `HETATM`, and `TER` lines are read into a single DataFrame but atoms in a NMR model has the same value in the `nmr_model` column which is determined by the number in the corresponding `MODEL` line. `SEQRES` lines are read into a category named `_seq_res`.
 
 The `TRIPOS MOL2` file format is also supported for reading using the same keyword as the PDB and PDBx files about selecting file categories. Currently, the `ATOM`, `BOND`, and `MOLECULE` are supported.
 
@@ -29,7 +29,7 @@ Only `Pandas` is required since we need to export Pandas DataFrames. Python vers
 ## Install
 
 ```bash
-pip install pdbx2df
+pip install moldf
 ```
 
 ## Usage examples
@@ -39,7 +39,7 @@ pip install pdbx2df
 #### 1.1 If you want to read the 3D coordinates for PDB `1vii` into a Pandas DataFrame, and you have downloaded the `1vii.cif` file to your current working directory `./`, you can:
 
 ```python
-from pdbx2df import read_pdbx
+from moldf import read_pdbx
 pdbx_file = './1vii.cif'
 pdbx = read_pdbx(pdbx_file, category_names=['_atom_site'])
 atoms_df = pdbx['_atom_site']
@@ -49,7 +49,7 @@ atoms_df = pdbx['_atom_site']
 #### 1.2. If you want to read the FASTA sequence of `1vii`, you can:
 
 ```python
-from pdbx2df import read_pdbx
+from moldf import read_pdbx
 pdb_id = '1vii'
 pdbx = read_pdbx(pdb_id=pdb_id, category_names=['_entity_poly'])
 fasta_df = pdbx['_entity_poly']
@@ -66,7 +66,7 @@ By default, the fetched content will be saved to a file named `<pdb_id>.cif` und
 #### 1.3. You can read them simutanously:
 
 ```python
-from pdbx2df import read_pdbx
+from moldf import read_pdbx
 pdbx_file = './1vii.cif'
 pdbx = read_pdbx(pdbx_file, category_names=['_entity_poly', '_atom_site'])
 atoms_df = pdbx['_atom_site']
@@ -78,7 +78,7 @@ Putting a list of category names to `category_names`, you will get them if they 
 #### 1.4. You can parse the whole file by using 'all':
 
 ```python
-from pdbx2df import read_pdbx
+from moldf import read_pdbx
 pdbx_file = './1vii.cif'
 pdbx = read_pdbx(pdbx_file, category_names=['all'])
 atoms_df = pdbx['_atom_site']
@@ -89,7 +89,7 @@ fasta_df = pdbx['_entity_poly']
 #### 1.5. Write back to a PDBx file:
 
 ```python
-from pdbx2df import read_pdbx, write_pdbx
+from moldf import read_pdbx, write_pdbx
 pdbx_file = './1vii.cif'
 pdbx = read_pdbx(pdbx_file, category_names=['all'])
 keep = ['_atom_site', '_entity_poly']  # suppose we only want to keep the FASTA sequence and 3D coordinates.
@@ -100,7 +100,7 @@ write_pdbx(pdbx_keep, '1vii_save.cif')
 #### 2.1. For reading the atomic information in a PDB file `1vii.pdb`:
 
 ```python
-from pdbx2df import read_pdb
+from moldf import read_pdb
 pdb_file = './1vii.pdb'
 pdb = read_pdb(pdb_file=pdb_file, category_names=['_atom_site'])  # We use '_atom_site' here to mirror the mmCIF format and it is the default
 atoms_df = pdb['_atom_site']
@@ -110,7 +110,7 @@ atoms_df = pdb['_atom_site']
 #### 2.2. Suppose we only want to keep the protein residue atoms in `5u8l.pdb`:
 
 ```python
-from pdbx2df import read_pdb, write_pdb
+from moldf import read_pdb, write_pdb
 pdb_file = './5u8l.pdb'
 pdb = read_pdb(pdb_file=pdb_file, category_names=['_atom_site'])
 df = pdb['_atom_site']
@@ -131,7 +131,7 @@ Since our package can read from and write to PDB files containing NMR models, it
 ### 3. MOL2 file
 #### For example, to read the `test.mol2` file in the `tests/test_files` folder in this repository:
 ```python
-from pdbx2df import read_mol2
+from moldf import read_mol2
 mol2_file = './tests/test_files/test.mol2'
 mol2 = read_mol2(test_file)
 atoms_df = mol2['ATOM']  # The 'ATOM' category as a DataFrame.

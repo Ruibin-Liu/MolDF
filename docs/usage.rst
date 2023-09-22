@@ -1,12 +1,12 @@
 Quick Start
 ===========
-.. warning::
-   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+.. Important::
+   This project is renamed from **pdbx2df**. Please go to its `documentation`_ for historical features.
 
-.. _documentation: https://moldf.readthedocs.io/en/latest/
+.. _documentation: https://pdbx2df.readthedocs.io/en/latest/
 
 
-This quick start tutorial will guide you to use the ``pdbx2df`` functions and classes to read, manipulate,
+This quick start tutorial will guide you to use the **MolDF** functions and classes to read, manipulate,
 and write PDBx, PDB, and MOL2 files. You will learn by going through some basic but useful examples.
 
 .. _PDB:
@@ -14,16 +14,16 @@ and write PDBx, PDB, and MOL2 files. You will learn by going through some basic 
 1. Read a PDB file
 ------------------
 
-To read a PDB file, you can use the ``pdbx2df.read_pdb`` function:
+To read a PDB file, you can use the ``moldf.read_pdb`` function:
 
-One of the ``pdb_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdb``
+One of the ``pdb_file`` and ``pdb_id`` parameters should be given. Otherwise, ``moldf.read_pdb``
 will raise an exception. If ``pdb_file`` is given, ``pdb_id`` is ignored.
 
 For example:
 
 .. code-block:: python3
 
-   >>> from pdbx2df import read_pdb
+   >>> from moldf import read_pdb
    >>> pdb = read_pdb(pdb_id='1vii')
    >>> pdb['_atom_site'].columns
    Index(['record_name', 'atom_number', 'atom_name', 'alt_loc', 'residue_name',
@@ -64,7 +64,7 @@ it is simply:
 
 .. code-block:: python3
 
-   >>> from pdbx2df import PDBDataFrame
+   >>> from moldf import PDBDataFrame
    >>> pdb_df = PDBDataFrame(pdb_df)  # Just adding a few methods to the standard Pandas DataFrame
    >>> ca_atoms = pdb_df.ca_atoms
 
@@ -112,7 +112,7 @@ Even more, you can chain and make arbitrary combinations of them to get very com
 
 which gives you all the nitrogen atoms in the backbone of Lys, His, and Arg residues of 1vii's chain A that are within 10.0 Å of the origin point.
 For such a selection, using vanilla ``Pandas`` filter language can be very time-consuming, error-prone, and thus frustrating.
-Fortunately, ``pdbx2df`` can help you save a lot of effort.
+Fortunately, ``moldf`` can help you save a lot of effort.
 
 .. _PDB_write:
 
@@ -123,7 +123,7 @@ Writing back to a PDB file is simply:
 
 .. code-block:: python3
 
-   >>> from pdbx2df import write_pdb
+   >>> from moldf import write_pdb
    >>> write_pdb(pdb, 'output.pdb')
 
 Remember to use the ``pdb`` object, not the ``pdb_df``, or it will error out. An ``output.pdb`` file is saved to your working directory.
@@ -142,16 +142,16 @@ and the ``complex_selection.pdb`` has all and only the atoms in the ``complex_se
 4. Read a mmCIF/PDBx file
 -------------------------
 
-To read a PDBx file, you can use the ``pdbx2df.read_pdbx`` function:
+To read a PDBx file, you can use the ``moldf.read_pdbx`` function:
 
 
-One of the ``pdbx_file`` and ``pdb_id`` parameters should be given. Otherwise, ``pdbx2df.read_pdbx``
+One of the ``pdbx_file`` and ``pdb_id`` parameters should be given. Otherwise, ``moldf.read_pdbx``
 will raise an exception. If ``pdbx_file`` is given, ``pdb_id`` is ignored.
 
 
 For example:
 
->>> from pdbx2df import read_pdbx
+>>> from moldf import read_pdbx
 >>> pdbx = read_pdbx(pdb_id='1vii')
 >>> pdbx['_atom_site'].columns
 Index(['group_PDB', 'id', 'type_symbol', 'label_atom_id', 'label_alt_id',
@@ -190,7 +190,7 @@ Similar to the above :ref:`writing back to PDB file <PDB_write>` example, you ca
 
 .. code-block:: python3
 
-   >>> from pdbx2df import write_pdbx
+   >>> from moldf import write_pdbx
    >>> write_pdbx(pdbx, 'output.cif')
 
 Here the ``pdbx`` object is the one generated in the :ref:`PDBx reading <PDBX>` example.
@@ -211,7 +211,7 @@ And thus only the ``_atom_site`` and ``_entity_poly`` categories are saved to yo
 6. Read a MOL2 file
 -------------------
 
-To read a Tripos MOL2 file, you can use the ``pdbx2df.read_mol2`` function:
+To read a Tripos MOL2 file, you can use the ``moldf.read_mol2`` function:
 
 Let's download an example MOL2 file from LigandBox first. The example ligand is D00217_ or Tylenol_.
 
@@ -219,7 +219,7 @@ You can read it as:
 
 .. code-block:: python3
 
-   >>> from pdbx2df import read_mol2
+   >>> from moldf import read_mol2
    >>> mol2 = read_mol2(mol2_file='./D00217-01.mol2')
    >>> mol2['ATOM'].columns
    Index(['atom_id', 'atom_name', 'x', 'y', 'z', 'atom_type', 'subst_id',
@@ -241,12 +241,12 @@ the residues by `subst_name`, and then write back.
 
 .. code-block:: python3
 
-   >>> from pdbx2df import read_mol2, write_mol2
+   >>> from moldf import read_mol2, write_mol2
    >>> mol2 = read_mol2(mol2_file='glutathione.mol2')
    >>> mol2['ATOM'].sort_values(by=['subst_name', 'atom_id'], inplace=True)
-   >>> write_mol2(mol2, file_name='glutathione_pdbx2df.mol2')
+   >>> write_mol2(mol2, file_name='glutathione_moldf.mol2')
 
-In the `glutathione_pdbx2df.mol2` file, the atoms belonging to the same residue are together.
+In the `glutathione_moldf.mol2` file, the atoms belonging to the same residue are together.
 
 .. _ParmEd: https://github.com/ParmEd
 .. _example: https://github.com/ParmEd/ParmEd/issues/1029
@@ -254,13 +254,13 @@ In the `glutathione_pdbx2df.mol2` file, the atoms belonging to the same residue 
 8. RMSD, radius of gyration, and distance matrix
 ------------------------------------------------
 
-In pdbx2df, it is very intuitive and convenient to do atom selection as shown above, thanks
+In moldf, it is very intuitive and convenient to do atom selection as shown above, thanks
 to the :ref:`PDBDataFrame <PDBDataFrame>` class. In fact, the class has more than that. We
 can use it to calculate RMSD, radius of gyration, and distance matrix easily.
 
 .. code-block:: python3
 
-     >>> from pdbx2df import read_pdb, PDBDataFrame
+     >>> from moldf import read_pdb, PDBDataFrame
      >>> pdb = read_pdb(pdb_id='1g03')
      >>> df = pdb['_atom_site']
      >>> df = PDBDataFrame(df)

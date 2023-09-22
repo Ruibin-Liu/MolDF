@@ -1,13 +1,13 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for writing PDB files."""
 import os
 import sys
 
-from pdbx2df.read_pdb import read_pdb
-from pdbx2df.write_pdb import write_pdb
+from moldf.read_pdb import read_pdb
+from moldf.write_pdb import write_pdb
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)
@@ -24,7 +24,7 @@ def test_write_pdb():
         pdb_file=test_file, category_names=["_atom_site"], allow_chimera=False
     )
 
-    compare_to = [CFD, "test_files", f"{pdb_id}_pdbx2df.pdb"]
+    compare_to = [CFD, "test_files", f"{pdb_id}_moldf.pdb"]
     compare_to = f"{os.sep}".join(compare_to)
 
     write_to = [CFD, "test_files", f"{pdb_id}_test.pdb"]

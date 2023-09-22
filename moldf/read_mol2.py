@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Mol2 format reading.
 
 Read a Tripos ``.mol2`` file into a dictionary of ``pandas DataFrames``. Different
@@ -72,7 +72,7 @@ def read_mol2(
             implemented = ", ".join(IMPLEMENTED_MOL2_CATS)
             raise NotImplementedError(
                 f"""Only {implemented} categories are implemented for the MOL2 format.
-                Create an issue at https://github.com/Ruibin-Liu/pdbx2df if
+                Create an issue at https://github.com/Ruibin-Liu/moldf if
                 you want the {category_name} category to be implemented.
                 """
             )
@@ -151,7 +151,7 @@ def _get_header_df(header_lines: list[tuple]) -> pd.DataFrame:
             header_attrs[header_line[0]] = [header_line[1]]
         else:
             message = f"The line {header_line} has > 2 items separated"
-            message += " by ':'. pdbx2df uses the first as column name"
+            message += " by ':'. moldf uses the first as column name"
             message += " and concatenate the rest as value."
             warnings.warn(
                 message,

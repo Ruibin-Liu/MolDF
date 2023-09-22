@@ -1,14 +1,14 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for reading mol2 files."""
 import os
 import sys
 
 import pytest
 
-from pdbx2df.read_mol2 import read_mol2
+from moldf.read_mol2 import read_mol2
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)
@@ -33,7 +33,7 @@ def test_read_mol2():
 
     # Not implemented
     message = """Only ATOM, MOLECULE, BOND, HEADER categories are implemented for the MOL2 format.
-                Create an issue at https://github.com/Ruibin-Liu/pdbx2df if
+                Create an issue at https://github.com/Ruibin-Liu/moldf if
                 you want the ANCHOR_ATOM category to be implemented.
                 """  # noqa
     with pytest.raises(NotImplementedError) as error_msg:

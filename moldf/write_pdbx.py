@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """PDBx/mmCIF format writing.
 
 Write a dict of ``Pandas DataFrame`` back to a PDBx file.
@@ -24,14 +24,14 @@ def write_pdbx(
     Args:
         pdbx (required): a ``dict`` of ``Pandas DataFrame`` s to write.
         file_name (optional): file name to write a PDBx file. If ``None``,
-            ``pdbx2df_output.cif`` will be used as the file name.
+            ``moldf_output.cif`` will be used as the file name.
             Defaults to **None**.
 
     Raises:
         TypeError: if ``pdbx`` is not a valid dict of ``DataFrame``.
     """
     if not file_name:
-        file_name = "pdbx2df_output.cif"
+        file_name = "moldf_output.cif"
 
     if not isinstance(pdbx, dict):
         raise TypeError(f"pdbx has to be a dict but {type(pdbx)} is provided.")

@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """ ``PDBDataFrame`` as a subclass of ``Pandas DataFrame``.
 
 Several features are added to make PDB data more accessible and selectable:
@@ -81,7 +81,7 @@ class PDBDataFrame(pd.DataFrame):
 
     Example
     -------
-    >>> from pdbx2df import read_pdb, PDBDataFrame
+    >>> from moldf import read_pdb, PDBDataFrame
     >>> pdb = read_pdb(pdb_id='1vii')
     >>> pdb_df = pdb['_atom_site']
     >>> pdb_df = PDBDataFrame(pdb_df)

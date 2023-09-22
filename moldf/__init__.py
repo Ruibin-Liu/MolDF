@@ -1,9 +1,9 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """
-# pdbx2df - Super lightweight and fast mmCIF/PDB/MOL2 file parser into Pandas DataFrames and backwards writer.
+# MolDF - Super lightweight and fast mmCIF/PDB/MOL2 file parser into Pandas DataFrames and backwards writer.
 
 ### Key features:
 
@@ -13,15 +13,15 @@
 
 ### 3. Write a dictionary of Pandas DataFrames into mmCIF/PDB files.
 """  # noqa
-from pdbx2df.constants import AMINO_ACIDS, ELEMENT_MASSES
-from pdbx2df.pdb_dataframe import PDBDataFrame
-from pdbx2df.read_mol2 import read_mol2
-from pdbx2df.read_pdb import read_pdb
-from pdbx2df.read_pdbx import read_pdbx
-from pdbx2df.split_line import split_line
-from pdbx2df.write_mol2 import write_mol2
-from pdbx2df.write_pdb import write_pdb
-from pdbx2df.write_pdbx import write_pdbx
+from moldf.constants import AMINO_ACIDS, ELEMENT_MASSES
+from moldf.pdb_dataframe import PDBDataFrame
+from moldf.read_mol2 import read_mol2
+from moldf.read_pdb import read_pdb
+from moldf.read_pdbx import read_pdbx
+from moldf.split_line import split_line
+from moldf.write_mol2 import write_mol2
+from moldf.write_pdb import write_pdb
+from moldf.write_pdbx import write_pdbx
 
 from .version import __version__
 

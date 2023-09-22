@@ -1,14 +1,14 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Test for reading PDBx/mmCIF files."""
 import os
 import sys
 
 import pandas as pd  # type: ignore
 
-from pdbx2df.read_pdbx import read_pdbx
+from moldf.read_pdbx import read_pdbx
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)

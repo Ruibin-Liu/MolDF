@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for the PDBDataFrame class."""
 import os
 import sys
@@ -10,9 +10,9 @@ import numpy as np  # type: ignore
 import pytest
 from scipy.spatial.transform import Rotation  # type: ignore
 
-from pdbx2df.constants import ELEMENT_MASSES
-from pdbx2df.pdb_dataframe import RESIDUE_CODES, PDBDataFrame
-from pdbx2df.read_pdb import read_pdb
+from moldf.constants import ELEMENT_MASSES
+from moldf.pdb_dataframe import RESIDUE_CODES, PDBDataFrame
+from moldf.read_pdb import read_pdb
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)

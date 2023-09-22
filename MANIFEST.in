@@ -3,7 +3,7 @@ include README.md requirements.txt
 # added by check-manifest
 include *.txt
 include tox.ini
-recursive-include pdbx2df *.typed
+recursive-include moldf *.typed
 
 # added by check-manifest
 include *.yaml
