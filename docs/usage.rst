@@ -1,5 +1,10 @@
 Quick Start
 ===========
+.. warning::
+   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+
+.. _documentation: https://moldf.readthedocs.io/en/latest/
+
 
 This quick start tutorial will guide you to use the ``pdbx2df`` functions and classes to read, manipulate,
 and write PDBx, PDB, and MOL2 files. You will learn by going through some basic but useful examples.

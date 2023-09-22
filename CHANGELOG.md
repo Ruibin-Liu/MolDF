@@ -1,15 +1,9 @@
-# pdbx2df v0.6.7 (in Dev)
+# pdbx2df v0.6.7
 
-## Planned new features
+Last version under the name **pdbx2df**. Now it is renamed as **MolDF**.
 
-[ ] Read and write `.xyz` files
-
-[ ] Support multiple molecule in `.mol2` files
-
-[ ] Write and read to `.jcsv` file for all types.
+Future installation by `pip install pdbx2df` will install `moldf` as well.
 
 ## Fixes
 
 - Fixed the problem that `PDBDataFrame` `.atoms` failed for `PDBx` DataFrame.
-
-## Docs

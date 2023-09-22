@@ -5,6 +5,10 @@
 
 Welcome to pdbx2df's documentation!
 ===================================
+.. warning::
+   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+
+.. _documentation: https://moldf.readthedocs.io/en/latest/
 
 **pdbx2df** reads structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ used in biology and chemistry
 into dictionaries of `Pandas DataFrame`_ s. With such a data structure, relatively loosely coupled
