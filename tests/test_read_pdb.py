@@ -1,12 +1,12 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for reading PDB files."""
 import os
 import sys
 
-from pdbx2df.read_pdb import read_pdb
+from moldf.read_pdb import read_pdb
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)

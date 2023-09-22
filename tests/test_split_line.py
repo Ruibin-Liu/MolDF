@@ -1,13 +1,13 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for splitting lines in PDBx/mmCIF files."""
 import sys
 
 import pytest  # type: ignore
 
-from pdbx2df.split_line import split_line
+from moldf.split_line import split_line
 
 sys.path.append("..")
 

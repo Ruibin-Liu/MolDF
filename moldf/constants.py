@@ -1,8 +1,8 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
-"""Constants used in `pdbx2df`"""
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
+"""Constants used in `MolDF`"""
 
 AMINO_ACIDS = {
     "ALA": "A",

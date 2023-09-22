@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """PDBx/mmCIF format reading.
 
 Reads a PDBx file into a dict of ``Pandas DataFrame`` s.

@@ -1,12 +1,12 @@
-.. pdbx2df documentation master file, created by
+.. MolDF documentation master file, created by
    sphinx-quickstart on Tue Sep 12 16:39:04 2023.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pdbx2df's documentation!
+Welcome to MolDF's documentation!
 ===================================
 
-**pdbx2df** reads structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ used in biology and chemistry
+**MolDF** reads structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ used in biology and chemistry
 into dictionaries of `Pandas DataFrame`_ s. With such a data structure, relatively loosely coupled
 data are separated into different ``DataFrame`` objects but are still linked to each other in
 the same `Python dict`_. For the ``DataFrame`` objects, cheminformatians, bioinformaticans, and
@@ -46,7 +46,7 @@ transfer to other platform or programming languages.
 There are other python packages that can parse PDB files into ``DataFrame`` s. `CPDB`_ is the fastest by using Cython according to the author's
 `benchmarks`_. But it can only parse PDB files not the other formats, and no writing back to PDB files.
 `BioPandas`_ can parse PDBx, PDB, and MOL2 files, but it is slow by the
-same `benchmarks`_. According to my benchmark (coming soon!), **pdbx2df** is also much faster than ``BioPandas``
+same `benchmarks`_. According to my benchmark (coming soon!), **moldf** is also much faster than ``BioPandas``
 and only slightly slower than ``CPDB``.
 
 Other than the lightweight and speedy parts, perhaps the provided  :ref:`PDBDataFrame <PDBDataFrame>` ``class``, which is a ``Pandas DataFrame``
@@ -77,8 +77,8 @@ Contents
    :caption: Project Links
    :hidden:
 
-   PyPI page <https://pypi.org/project/pdbx2df>
-   GitHub Repository <https://github.com/Ruibin-Liu/pdbx2df>
+   PyPI page <https://pypi.org/project/moldf>
+   GitHub Repository <https://github.com/Ruibin-Liu/moldf>
 
 Indices and tables
 ==================

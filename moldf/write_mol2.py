@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """MOL2 format writing.
 
 Write a dict of ``Pandas DataFrame`` back to a MOL2 file.
@@ -16,7 +16,7 @@ from datetime import date
 
 import pandas as pd  # type: ignore
 
-from .version import __version__ as pdbx2df_version
+from .version import __version__ as moldf_version
 
 IMPLEMENTED_MOL2_CATS = ["MOLECULE", "ATOM", "BOND", "HEADER"]
 """MOL2 categories that are currently implemented."""
@@ -32,7 +32,7 @@ def write_mol2(
     Args:
         mol2 (required): a ``dict`` of ``Pandas DataFrame`` s to write.
         file_name (optional): file name to write a MOL2 file. If ``None``,
-            ``pdbx2df_output.mol2`` will be used as the file name.
+            ``moldf_output.mol2`` will be used as the file name.
             Defaults to **None**.
 
     Raises:
@@ -40,7 +40,7 @@ def write_mol2(
         ValueError: if the ``mol2`` contains other than supported categories.
     """
     if not file_name:
-        file_name = "pdbx2df_output.mol2"
+        file_name = "moldf_output.mol2"
 
     if not isinstance(mol2, dict):
         raise TypeError(f"'mol2' has to be a dict but {type(mol2)} is provided.")
@@ -56,7 +56,7 @@ def write_mol2(
     with open(file_name, "w", encoding="utf-8") as out_file:
         out_file.write("###\n")
         today = date.today().strftime("%Y-%m-%d")
-        out_file.write(f"### Created by pdbx2df v{pdbx2df_version} {today}\n")
+        out_file.write(f"### Created by moldf v{moldf_version} {today}\n")
 
         if "HEADER" in mol2:
             df_header = mol2["HEADER"]

@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """PDB format reading.
 
 Reads a PDB file, including Chimera compatible ones, into a dict of

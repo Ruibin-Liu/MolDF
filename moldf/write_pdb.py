@@ -1,7 +1,7 @@
-# pdbx2df
+# MolDF
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
-# Code Repository: https://github.com/Ruibin-Liu/pdbx2df
+# Code Repository: https://github.com/Ruibin-Liu/MolDF
 """PDB format writing.
 
 Write a dict of ``Pandas DataFrame`` back to a PDB file.
@@ -18,7 +18,7 @@ from datetime import date
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-from .version import __version__ as pdbx2df_version
+from .version import __version__ as moldf_version
 
 IMPLEMENTED_PDB_CATS = ["_atom_site"]
 """PDB categories that are currently implemented."""
@@ -34,7 +34,7 @@ def write_pdb(
     Args:
         pdb (required): a ``dict`` of ``Pandas DataFrame`` s to write.
         file_name (optional): file name to write a PDB file. If ``None``,
-            ``pdbx2df_output.pdb`` will be used as the file name.
+            ``moldf_output.pdb`` will be used as the file name.
             Defaults to **None**.
         allow_chimera (optional): whether to allow writing to Chimera-formatted PDB
             files. Defaults to **False**.
@@ -44,7 +44,7 @@ def write_pdb(
         ValueError: if the ``pdb`` contains other than supported categories.
     """
     if not file_name:
-        file_name = "pdbx2df_output.pdb"
+        file_name = "moldf_output.pdb"
 
     if not isinstance(pdb, dict):
         raise TypeError(f"pdb has to be a dict but {type(pdb)} is provided.")
@@ -57,7 +57,7 @@ def write_pdb(
     with open(file_name, "w", encoding="utf-8") as out_file:
         today = date.today().strftime("%Y-%m-%d")
         padding = " "
-        tag = f"CREATED WITH PDBX2DF v{pdbx2df_version} {today}  "
+        tag = f"CREATED WITH moldf v{moldf_version} {today}  "
         header = f"REMARK   1{tag:>70}\n"
         out_file.write(header)
 

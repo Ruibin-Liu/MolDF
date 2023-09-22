@@ -4,28 +4,28 @@ API References
 PDBx Reader
 -------------------------
 
-.. automodule:: pdbx2df.read_pdbx
+.. automodule:: moldf.read_pdbx
    :members:
    :private-members:
 
 PDB Reader
 ------------------------
 
-.. automodule:: pdbx2df.read_pdb
+.. automodule:: moldf.read_pdb
    :members:
    :private-members:
 
 MOL2 Reader
 -------------------------
 
-.. automodule:: pdbx2df.read_mol2
+.. automodule:: moldf.read_mol2
    :members:
    :private-members:
 
 PDBDataFrame Class
 -----------------------------
 .. _PDBDataFrame:
-.. automodule:: pdbx2df.pdb_dataframe
+.. automodule:: moldf.pdb_dataframe
    :members:
    :private-members:
    :undoc-members:
@@ -34,25 +34,25 @@ PDBDataFrame Class
 PDBx Writer
 --------------------------
 
-.. automodule:: pdbx2df.write_pdbx
+.. automodule:: moldf.write_pdbx
    :members:
    :private-members:
 
 PDB Writer
 -------------------------
 
-.. automodule:: pdbx2df.write_pdb
+.. automodule:: moldf.write_pdb
    :members:
    :private-members:
 
 MOL2 Writer
 -------------------------
 
-.. automodule:: pdbx2df.write_mol2
+.. automodule:: moldf.write_mol2
    :members:
    :private-members:
 
 PDBx Line Splitter
 --------------------------
 
-.. autofunction:: pdbx2df.split_line
+.. autofunction:: moldf.split_line
