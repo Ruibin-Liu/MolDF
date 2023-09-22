@@ -1,9 +1,9 @@
 Quick Start
 ===========
-.. warning::
-   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+.. Important::
+   This project is renamed from **pdbx2df**. Please go to its `documentation`_ for historical features.
 
-.. _documentation: https://moldf.readthedocs.io/en/latest/
+.. _documentation: https://pdbx2df.readthedocs.io/en/latest/
 
 
 This quick start tutorial will guide you to use the **MolDF** functions and classes to read, manipulate,

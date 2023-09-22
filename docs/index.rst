@@ -5,10 +5,10 @@
 
 Welcome to MolDF's documentation!
 ===================================
-.. warning::
-   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+.. Important::
+   This project is renamed from **pdbx2df**. Please go to its `documentation`_ for historical features.
 
-.. _documentation: https://moldf.readthedocs.io/en/latest/
+.. _documentation: https://pdbx2df.readthedocs.io/en/latest/
 
 **MolDF** reads structure files like `PDB`_, `PDBx/mmCIF`_, and `MOL2`_ used in biology and chemistry
 into dictionaries of `Pandas DataFrame`_ s. With such a data structure, relatively loosely coupled
