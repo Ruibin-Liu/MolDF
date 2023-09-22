@@ -1,5 +1,9 @@
 API References
 ===============
+.. warning::
+   This project name has been renamed as **MolDF**, please go to its `documentation`_ for latest features.
+
+.. _documentation: https://moldf.readthedocs.io/en/latest/
 
 PDBx Reader
 -------------------------

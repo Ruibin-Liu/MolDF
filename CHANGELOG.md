@@ -1,16 +1,8 @@
-# MolDf v0.7.0
+# pdbx2df v0.6.7
 
-To install this version
+Last version under the name **pdbx2df**. Now it is renamed as **MolDF**.
 
-```
-pip install moldf
-```
-
-## Rename
-
-The repo is renamed as 'MolDF' and `pdbx2df` in code is changed to `moldf`.
-
-The last `pdbx2df` version will be `0.6.7` and it will 'redirect' to this new package.
+Future installation by `pip install pdbx2df` will install `moldf` as well.
 
 ## Fixes
 
