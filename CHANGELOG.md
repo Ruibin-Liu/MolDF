@@ -1,4 +1,4 @@
-# MolDf v0.7.0
+# MolDf v0.7.1
 
 To install this version
 
@@ -6,12 +6,6 @@ To install this version
 pip install moldf
 ```
 
-## Rename
+## New feature
 
-The repo is renamed from `pdbx2df`.
-
-The last `pdbx2df` version was `0.6.7`.
-
-## Docs
-
-- Update docs for renaming.
+- Gets bonding information either by `get_bonds_by_distance` or `get_bonds_by_template`
