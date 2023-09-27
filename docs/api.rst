@@ -56,6 +56,13 @@ MOL2 Writer
    :members:
    :private-members:
 
+Covalent Bond
+-------------------------
+
+.. automodule:: moldf.covalent_bond
+   :members:
+   :private-members:
+
 PDBx Line Splitter
 --------------------------
 

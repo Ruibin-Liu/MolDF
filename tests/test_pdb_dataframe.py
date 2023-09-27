@@ -4,7 +4,9 @@
 # Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for the PDBDataFrame class."""
 import os
+import shutil
 import sys
+from pathlib import Path
 
 import numpy as np  # type: ignore
 import pytest
@@ -101,11 +103,14 @@ def test_property_getter():
     assert np.allclose(
         coords.values, pdb_df.coords.values
     ), "Coords not selected correctly."
+
+    element_set = pdb_df.element_set
+    assert element_set == {"C", "O", "N", "S"}
+
     sequences = {
         "A": "AWEIPRESLRLEVKLGQGCFGEVWMGTWNGTTRVAIKTLKPGTMSPEAFLQEAQVMKKLRHEKLVQLYAVVSEEPIYIVTEYMSKGSLLDFLKGEMGKYLRLPQLVDMAAQIASGMAYVERMNYVHRDLRAANILVGENLVCKVADFGFPIKWTAPEAALYGRFTIKSDVWSFGILLTELTTKGRVPYPGMVNREVLDQVERGYRMPCPPECPESLHDLMCQCWRKDPEERPTFEYLQAFLEDYFTSTEPQYQPGENL",  # noqa
         "B": "AWEIPRESLRLEVKLGQGCFGEVWMGTWNGTTRVAIKTLKPGTMSPEAFLQEAQVMKKLRHEKLVQLYAVVSEEPIYIVTEYMSKGSLLDFLKGEMGKYLRLPQLVDMAAQIASGMAYVERMNYVHRDLRAANILVGENLVCKVADFGLARLFPIKWTAPEAALYGRFTIKSDVWSFGILLTELTTKGRVPYPGMVNREVLDQVERGYRMPCPPECPESLHDLMCQCWRKDPEERPTFEYLQAFLEDYFTSTEPQYQPGENL",  # noqa
     }
-
     assert pdb_df.sequences == sequences, "Chain sequences not right."
 
     assert len(pdb_df.residue_list) == 520 and pdb_df.residue_list[0] == (
@@ -203,6 +208,88 @@ def test_property_setter():
 
     pdb_df.use_square_form = True
     assert pdb_df.use_square_form, "use_square_form not set correctly."
+
+
+def test_get_bonds_by_distance():
+    """Testing the get_bonds_by_distance function."""
+    file_path = [CFD, "test_files", "5K9I.pdb"]
+    test_file = f"{os.sep}".join(file_path)
+    pdb = read_pdb(
+        pdb_file=test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+    )
+    df = pdb["_atom_site"]
+    pdb_df = PDBDataFrame(df)
+    bonds = pdb_df.residue_numbers(259).get_bonds_by_distance()
+    expected = {
+        (1, 2): 1,
+        (2, 3): 1,
+        (2, 5): 1,
+        (3, 4): 2,
+        (2091, 2092): 1,
+        (2092, 2093): 1,
+        (2092, 2095): 1,
+        (2093, 2094): 2,
+    }
+    assert bonds == expected, "Covalent-only bonds incorrect for 5K9I 259."
+    bonds = pdb_df.residue_numbers(259).get_bonds_by_distance(need_non_covalent=True)
+    expected = {
+        (1, 2): 1,
+        (1, 3): 0.5,
+        (1, 4): 0.5,
+        (1, 5): 0.5,
+        (2, 3): 1,
+        (2, 4): 0.5,
+        (2, 5): 1,
+        (3, 4): 2,
+        (3, 5): 0.5,
+        (4, 5): 0.5,
+        (2091, 2092): 1,
+        (2091, 2093): 0.5,
+        (2091, 2094): 0.5,
+        (2091, 2095): 0.5,
+        (2092, 2093): 1,
+        (2092, 2094): 0.5,
+        (2092, 2095): 1,
+        (2093, 2094): 2,
+        (2093, 2095): 0.5,
+        (2094, 2095): 0.5,
+    }
+    assert bonds == expected, "Covalent+non-covalent bonds incorrect for 5K9I 259."
+
+
+def test_get_bonds_by_template():
+    """Testing the get_bonds_by_template function."""
+    file_path = [CFD, "test_files", "5K9I.pdb"]
+    test_file = f"{os.sep}".join(file_path)
+    pdb = read_pdb(
+        pdb_file=test_file,
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+    )
+    df = pdb["_atom_site"]
+    pdb_df = PDBDataFrame(df)
+    bonds = pdb_df.residue_numbers([259, 260]).get_bonds_by_template()
+    assert bonds[(1, 2)] == "SING", "N-CA bond incorrect for 5K9I"
+    assert bonds[(3, 6)] == "SING", "Peptide bond incorrect for 5K9I"
+
+    pdb = read_pdb(
+        pdb_id="1eru",
+        category_names=["_atom_site"],
+        allow_chimera=True,
+        need_ter_lines=True,
+        pdb_file_dir=Path(CFD, "test_files"),
+    )
+    df = pdb["_atom_site"]
+    pdb_df = PDBDataFrame(df)
+    bonds = pdb_df.residue_numbers([32, 35]).get_bonds_by_template()
+    assert bonds[(239, 240)] == "SING", "N-CA bond incorrect for 1ERU"
+    assert bonds[(244, 261)] == "SING", "Disulfide bond incorrect for 1ERU"
+    os.remove(Path(CFD, "test_files", "1ERU.pdb"))
+    shutil.rmtree("./template_files")
 
 
 def test_get_residue_list():
