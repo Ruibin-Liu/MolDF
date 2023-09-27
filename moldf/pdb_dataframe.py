@@ -330,7 +330,8 @@ class PDBDataFrame(pd.DataFrame):
                 ``single_radii_set`` is not valid.
 
         Returns:
-            list: a list of bonds a tuples
+            a dictionary of bonds with tuple of ``atom_number`` as keys and bond types
+                as values.
         """
         atoms = self.atoms
         if len(atoms) != len(atoms.atom_number.unique()):
