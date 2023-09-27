@@ -57,7 +57,7 @@ def read_pdbx(
         save_pdbx_file (optional): whether to save the fetched PDBx file from RCSB
             to ``pdbx_file_dir``. Defaults to **False**.
         pdbx_file_dir (optional): directory to save fetched PDBx files. If ``None`` but
-            ``save_pdbx_file`` is ``True``, the current working directory is used.
+            ``save_pdbx_file`` is ``True``, './PDBx_files' is used.
             Defaults to **None**.
 
     Returns:
@@ -76,6 +76,8 @@ def read_pdbx(
         pdb_id = str(pdb_id).upper()
         if len(pdb_id) == 4:
             pdbx_file_url = f"https://files.rcsb.org/view/{pdb_id.upper()}.cif"
+        elif len(pdb_id) < 4:
+            pdbx_file_url = f"https://files.rcsb.org/ligands/view/{pdb_id.upper()}.cif"
         else:
             pdbx_file_url = f"https://alphafold.ebi.ac.uk/files/AF-{pdb_id.upper()}-F1-model_v{AF2_MODEL}.cif"
         try:

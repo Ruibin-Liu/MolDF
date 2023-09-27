@@ -72,7 +72,7 @@ def read_pdb(
         save_pdb_file (optional): whether to save the fetched PDB file from RCSB
             to ``pdb_file_dir``. Defaults to **True**.
         pdb_file_dir (optional): directory to save fetched PDB files. If ``None`` but
-            ``save_pdb_file`` is ``True``, the current working directory is used.
+            ``save_pdb_file`` is ``True``, './PDB_files' is used.
             Defaults to **None**.
         allow_chimera (optional): whether to allow Chimera-formatted PDB files.
             Defaults to **True**.
