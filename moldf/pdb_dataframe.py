@@ -24,6 +24,7 @@ import functools
 import warnings
 from collections import defaultdict
 from collections.abc import Iterable
+from itertools import combinations, product
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -32,6 +33,7 @@ from scipy.spatial.transform import Rotation  # type: ignore
 from typing_extensions import Self
 
 from .constants import AMINO_ACIDS, ELEMENT_MASSES
+from .covalent_bond import get_covalent_radii, get_residue_template
 
 RESIDUE_CODES = AMINO_ACIDS
 """dict[str, str], turn 3-, 2-, and 1-letter residue codes to 1-letter codes."""
@@ -221,13 +223,13 @@ class PDBDataFrame(pd.DataFrame):
             Chimera compatible format instead of 3 as in the standard PDB
             format.  **Not settable**.
         """
+        residue_name_set = self.atoms.residue_name.unique()
         try:
-            if len(self.head(1).residue_name[0]):
+            residue_name_set = self.atoms.residue_name.unique()
+            if len(residue_name_set) > 0 and len(residue_name_set[0]) == 4:
                 self._is_chimera = True
         except AttributeError:
             pass  # 'residue_name' not in self.coords
-        except IndexError:
-            pass  # empty
 
         return self._is_chimera
 
@@ -288,6 +290,200 @@ class PDBDataFrame(pd.DataFrame):
             Numpy array of the coordinates.
         """
         return self.atoms[["x_coord", "y_coord", "z_coord"]]
+
+    @property
+    def element_set(self) -> set:
+        """Gets the set of element symbols."""
+        elements = self.atoms.element_symbol.unique()
+        return set([e.strip().upper() for e in elements])
+
+    @property
+    @functools.lru_cache()
+    def bonds(self) -> dict:
+        """Gets the list of bonds. Each bond is represented as a pair of
+            ``atom_number`` values.
+
+        Raises:
+            ValueError: if the list of ``atom_number`` is not a set.
+        """
+        return self.get_bonds_by_template()
+
+    def get_bonds_by_distance(
+        self,
+        single_radii_set: str | None = None,
+        need_non_covalent: bool = False,
+        non_covalent_cutoff: float = 4.5,
+    ) -> dict:
+        """Gets all the bonds purely by covalent radii constraints.
+
+        Args:
+            single_radii_set (optional): radii sets to use. If ``None``, ``single_C``
+                is used as to Cordero (PMID 18478144). Another option is ``single_PA``
+                which refers to Pyykkö's studies (PMID 19058281;19856342;15832398,
+                and doi:10.1103/PhysRevB.85.024115). Defaults to **None**.
+            need_non_covalent (optional): whether non-covalent 'bonding' should be
+                included. Defaults to **False**.
+            non_covalent_cutoff (optional): distance cutoff for non-covalent 'bonding'.
+
+        Raises:
+            ValueError: if the list of ``atom_number`` is not unique or if the
+                ``single_radii_set`` is not valid.
+
+        Returns:
+            list: a list of bonds a tuples
+        """
+        atoms = self.atoms
+        if len(atoms) != len(atoms.atom_number.unique()):
+            raise ValueError("The 'atom_number' list has repetitive values.")
+        if single_radii_set is None:
+            single_radii_set = "single_C"
+        if single_radii_set not in ["single_C", "single_PA"]:
+            message = "The 'single_radii_set' has to be one of "
+            message += "'single_C' and 'single_PA', but "
+            message += f"{single_radii_set} is provided."
+            raise ValueError(message)
+
+        results: dict = {}
+
+        element_set = self.element_set
+        if "D" in element_set or "T" in element_set:
+            element_set.update({"H"})
+
+        covalent_radii = get_covalent_radii(element_set)
+        single_bonds = {}
+        for first, second in product(element_set, repeat=2):
+            first_radius = covalent_radii[covalent_radii.element_symbol == first][
+                single_radii_set
+            ].to_list()[0]
+            second_radius = covalent_radii[covalent_radii.element_symbol == second][
+                single_radii_set
+            ].to_list()[0]
+            first = first.rjust(2)
+            second = second.rjust(2)
+            single_bonds[(first, second)] = (
+                (first_radius + second_radius) / 100 + 0.2
+            ) ** 2
+            # TODO: make it possible to use 'single_PA' as radii criteria option.
+            # Is it possible to fit a function purely based on closest 6 distances?
+        double_bonds = {}
+        for first, second in product(element_set, repeat=2):
+            first_radius = covalent_radii[
+                covalent_radii.element_symbol.str.upper() == first
+            ]["double"].to_list()[0]
+            second_radius = covalent_radii[
+                covalent_radii.element_symbol.str.upper() == second
+            ]["double"].to_list()[0]
+            first = first.rjust(2)
+            second = second.rjust(2)
+            double_bonds[(first, second)] = (
+                (first_radius + second_radius) / 100 + 0.05
+            ) ** 2
+        triple_bonds = {}
+        for first, second in product(element_set, repeat=2):
+            first_radius = covalent_radii[
+                covalent_radii.element_symbol.str.upper() == first
+            ]["triple"].to_list()[0]
+            second_radius = covalent_radii[
+                covalent_radii.element_symbol.str.upper() == second
+            ]["triple"].to_list()[0]
+            first = first.rjust(2)
+            second = second.rjust(2)
+            triple_bonds[(first, second)] = (
+                (first_radius + second_radius) / 100 + 0.05
+            ) ** 2
+
+        # No-bond, triple-bond, and default single bond
+        self.use_square_form = False
+        non_covalent_cutoff = non_covalent_cutoff**2
+        dis_matrix = self.atoms.distance_matrix
+        element_matrix = combinations(self.atoms.element_symbol.to_list(), 2)
+        atom_number_matrix = combinations(self.atoms.atom_number.to_list(), 2)
+        for i, (elements, atom_numbers) in enumerate(
+            zip(element_matrix, atom_number_matrix)
+        ):
+            bond_type: int | float = 0
+            dis = dis_matrix[i]
+            first_element, second_element = elements
+            if dis <= triple_bonds[(first_element, second_element)]:
+                bond_type = 3
+            elif dis <= double_bonds[(first_element, second_element)]:
+                bond_type = 2
+            elif dis <= single_bonds[(first_element, second_element)]:
+                bond_type = 1
+            elif need_non_covalent and dis < non_covalent_cutoff:
+                bond_type = 0.5
+            atom_number_1, atom_number_2 = atom_numbers
+            if bond_type > 0:
+                results[(atom_number_1, atom_number_2)] = bond_type
+
+        return results
+
+    def get_bonds_by_template(self) -> dict:
+        """Gets covalent bonds based on residue/ligand templates."""
+        residue_name_sets = self.residue_name.unique()
+        residue_name_sets = set([n for n in residue_name_sets])
+
+        intra_bonds_dict = {}
+        for residue_name in residue_name_sets:
+            intra_bonds_dict[residue_name] = get_residue_template(
+                residue_name=residue_name.strip()
+            )
+
+        bonds: dict = {}
+        # intro bonds
+        for chain_id, residue_name, residue_number in self.atoms.residue_list:
+            residue = (
+                self.atoms.chain_ids([chain_id])
+                .residue_numbers(residue_number)
+                .residue_names([residue_name])
+            )
+            name_matrix = combinations(residue.atom_name, 2)
+            number_matrix = combinations(residue.atom_number, 2)
+            for names, numbers in zip(name_matrix, number_matrix):
+                first_name, second_name = names
+                first_name = first_name.strip()
+                second_name = second_name.strip()
+                first_number, second_number = numbers
+                a = intra_bonds_dict[residue_name].get((first_name, second_name))
+                b = intra_bonds_dict[residue_name].get((second_name, first_name))
+                # print(first_name, second_name, intra_bonds_dict[residue_name])
+                if a:
+                    bonds[(first_number, second_number)] = a[0]
+                elif b:
+                    bonds[(first_number, second_number)] = b[0]
+        # inter bonds for peptide bonds
+        carb_atoms = self.atoms.atom_names(["C"])
+        nitro_atoms = self.atoms.atom_names(["N"])
+        if len(carb_atoms) != len(nitro_atoms):
+            cn_matrix = PDBDataFrame.get_distance_matrix(carb_atoms, nitro_atoms)
+            for carb_index, carb_number in enumerate(carb_atoms.atom_number):
+                for nitro_index, nitro_number in enumerate(nitro_atoms.atom_number):
+                    if cn_matrix[carb_index, nitro_index] < 2.7889:
+                        bonds[(carb_number, nitro_number)] = "SING"
+        else:
+            for i in range(len(carb_atoms) - 1):
+                carb_atom = carb_atoms.iloc[i]
+                carb_xyz = (carb_atom.x_coord, carb_atom.y_coord, carb_atom.z_coord)
+                carb_number = carb_atom.atom_number
+                nitro_atom = nitro_atoms.iloc[i + 1]
+                nitro_xyz = (nitro_atom.x_coord, nitro_atom.y_coord, nitro_atom.z_coord)
+                nitro_number = nitro_atom.atom_number
+                dis = (
+                    (carb_xyz[0] - nitro_xyz[0]) ** 2
+                    + (carb_xyz[1] - nitro_xyz[1]) ** 2
+                    + (carb_xyz[2] - nitro_xyz[2]) ** 2
+                )
+                if dis < 2.7889:
+                    bonds[(carb_number, nitro_number)] = "SING"
+        # inter bonds for disulfide bonds
+        sulfur_atoms = self.residues.residue_names(["CYS"]).atom_names(["SG"])
+        s_dis_matrix = sulfur_atoms.distance_matrix
+        s_atom_matrix = combinations(sulfur_atoms.atom_number, 2)
+        for i, numbers in enumerate(s_atom_matrix):
+            if s_dis_matrix[i] < 9.0:  # 3.0 A is used as cutoff
+                bonds[(numbers[0], numbers[1])] = "SING"
+
+        return bonds
 
     @property
     @functools.lru_cache()
@@ -679,7 +875,7 @@ class PDBDataFrame(pd.DataFrame):
                 ):
                     if f" {name[0]}" not in self.ELEMENT_MASSES:
                         atom_name_strings.append(f"{name}".ljust(4))
-                        # eg 'MG' where ' M' is not a legal element in self.ELEMENT_MASSES.
+                        # eg 'MG' where ' M' is not a legal ele in self.ELEMENT_MASSES.
                         continue
                     if suppress_warning:
                         continue

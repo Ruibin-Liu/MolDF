@@ -1,4 +1,4 @@
-atomic_numer,element_symbol,single_C,single_PA,double,triple
+atomic_number,element_symbol,single_C,single_PA,double,triple
 1,H,31,32,-,-
 2,He,28,46,-,-
 3,Li,128,133,124,-
@@ -116,4 +116,4 @@ atomic_numer,element_symbol,single_C,single_PA,double,triple
 115,Uup,-,162,-,-
 116,Uuh,-,175,-,-
 117,Uus,-,165,-,-
-118,Uuo,-,157,-,-
+118,Uuo,-,157,-,

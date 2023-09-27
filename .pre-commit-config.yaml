@@ -9,10 +9,10 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: 'tests/test_files|assets'
+        exclude: 'tests/test_files|assets|moldf/covalent_bonds'
       - id: forbid-new-submodules
       - id: trailing-whitespace
-        exclude: 'tests/test_files|assets'
+        exclude: 'tests/test_files|assets|moldf/covalent_bonds'
 
   - repo: https://github.com/psf/black
     rev: 23.9.1
