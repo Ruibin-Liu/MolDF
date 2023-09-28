@@ -36,6 +36,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
+    package_data={"moldf": ["covalent_bonds/*"]},
     install_requires=REQUIREMENTS,
     python_requires=">=3.7",
 )
