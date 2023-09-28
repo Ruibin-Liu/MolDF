@@ -8,7 +8,7 @@
 
 
 ![Tests](https://github.com/Ruibin-Liu/MolDF/actions/workflows/tests.yml/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/MolDF/badge/?version=latest)](https://moldf.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/moldf/badge/?version=latest)](https://moldf.readthedocs.io/en/latest/?badge=latest)
 ![Python](https://img.shields.io/badge/python-3.7-blue.svg)
 [![PyPI version](https://badge.fury.io/py/moldf.svg)](https://badge.fury.io/py/moldf)
 

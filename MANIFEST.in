@@ -1,4 +1,4 @@
-include README.md requirements.txt
+include *.md requirements.txt
 
 # added by check-manifest
 include *.txt
@@ -11,5 +11,9 @@ recursive-include docs *.bat
 recursive-include docs *.ipynb
 recursive-include docs *.py
 recursive-include docs *.rst
+recursive-include docs *.txt
 recursive-include docs Makefile
-recursive-include images *.png
+recursive-include assets *.svg
+recursive-include assets *.png
+recursive-include moldf *.cif
+recursive-include moldf *.csv
