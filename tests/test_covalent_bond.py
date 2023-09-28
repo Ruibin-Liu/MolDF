@@ -7,43 +7,27 @@ import os
 import shutil
 import sys
 
-import pytest
-
-from moldf.covalent_bond import get_covalent_radii, get_residue_template
+from moldf.covalent_bond import get_covalent_bond_cutoffs, get_residue_template
 
 sys.path.append("..")
 CFD = os.path.dirname(__file__)
 
 
-def test_get_covalent_radii():
-    """Tests for the 'get_covalent_radii' function."""
+def test_get_covalent_bond_cutoffs():
+    """Tests for the 'get_covalent_bond_cutoffs' function."""
 
-    covalent_radii = get_covalent_radii(["C", "H", "O", "N", "S"])
-    assert covalent_radii.shape == (5, 5), "C/H/O/N/S covalent radii read wrongly."
-    assert covalent_radii.single_C.to_list() == [
-        31,
-        76,
-        71,
-        66,
-        105,
-    ], "C/H/O/N/S single covalent radii read wrongly for 'single_C'."
-
-    covalent_radii = get_covalent_radii(
-        ["C", "H", "O", "N", "S"], single_radii_set="single_PA"
+    single_bonds, double_bonds, triple_bonds = get_covalent_bond_cutoffs(
+        ["C", "H", "O", "N", "S"]
     )
-    assert covalent_radii.single_PA.to_list() == [
-        32,
-        75,
-        71,
-        63,
-        103,
-    ], "C/H/O/N/S single covalent radii read wrongly for 'single_PA'."
-    with pytest.raises(AttributeError) as exception_info:
-        covalent_radii.single_C
     assert (
-        str(exception_info.value) == "'DataFrame' object has no attribute 'single_C'"
-    ), "Column 'single_C' not dropped when 'single_PA' is used."
-    assert covalent_radii.double.isna()[0], "'H' double radius is not NaN."
+        abs(single_bonds[(" O", " O")] - 2.3104) < 0.00001
+    ), "O-O single bond incorrect."
+    assert (
+        abs(double_bonds[(" C", " C")] - 1.9321) < 0.00001
+    ), "C-C double bond incorrect."
+    assert (
+        abs(triple_bonds[(" N", " C")] - 1.4161) < 0.00001
+    ), "N-C triple bond incorrect."
 
 
 def test_get_residue_template():

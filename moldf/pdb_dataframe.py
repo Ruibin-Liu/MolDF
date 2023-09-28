@@ -24,7 +24,7 @@ import functools
 import warnings
 from collections import defaultdict
 from collections.abc import Iterable
-from itertools import combinations, product
+from itertools import combinations
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -33,7 +33,7 @@ from scipy.spatial.transform import Rotation  # type: ignore
 from typing_extensions import Self
 
 from .constants import AMINO_ACIDS, ELEMENT_MASSES
-from .covalent_bond import get_covalent_radii, get_residue_template
+from .covalent_bond import get_covalent_bond_cutoffs, get_residue_template
 
 RESIDUE_CODES = AMINO_ACIDS
 """dict[str, str], turn 3-, 2-, and 1-letter residue codes to 1-letter codes."""
@@ -349,49 +349,9 @@ class PDBDataFrame(pd.DataFrame):
         element_set = self.element_set
         if "D" in element_set or "T" in element_set:
             element_set.update({"H"})
-
-        covalent_radii = get_covalent_radii(element_set)
-        single_bonds = {}
-        for first, second in product(element_set, repeat=2):
-            first_radius = covalent_radii[covalent_radii.element_symbol == first][
-                single_radii_set
-            ].to_list()[0]
-            second_radius = covalent_radii[covalent_radii.element_symbol == second][
-                single_radii_set
-            ].to_list()[0]
-            first = first.rjust(2)
-            second = second.rjust(2)
-            single_bonds[(first, second)] = (
-                (first_radius + second_radius) / 100 + 0.2
-            ) ** 2
-            # TODO: make it possible to use 'single_PA' as radii criteria option.
-            # Is it possible to fit a function purely based on closest 6 distances?
-        double_bonds = {}
-        for first, second in product(element_set, repeat=2):
-            first_radius = covalent_radii[
-                covalent_radii.element_symbol.str.upper() == first
-            ]["double"].to_list()[0]
-            second_radius = covalent_radii[
-                covalent_radii.element_symbol.str.upper() == second
-            ]["double"].to_list()[0]
-            first = first.rjust(2)
-            second = second.rjust(2)
-            double_bonds[(first, second)] = (
-                (first_radius + second_radius) / 100 + 0.05
-            ) ** 2
-        triple_bonds = {}
-        for first, second in product(element_set, repeat=2):
-            first_radius = covalent_radii[
-                covalent_radii.element_symbol.str.upper() == first
-            ]["triple"].to_list()[0]
-            second_radius = covalent_radii[
-                covalent_radii.element_symbol.str.upper() == second
-            ]["triple"].to_list()[0]
-            first = first.rjust(2)
-            second = second.rjust(2)
-            triple_bonds[(first, second)] = (
-                (first_radius + second_radius) / 100 + 0.05
-            ) ** 2
+        single_bonds, double_bonds, triple_bonds = get_covalent_bond_cutoffs(
+            element_set
+        )
 
         # No-bond, triple-bond, and default single bond
         self.use_square_form = False
@@ -422,7 +382,6 @@ class PDBDataFrame(pd.DataFrame):
     def get_bonds_by_template(self) -> dict:
         """Gets covalent bonds based on residue/ligand templates."""
         residue_name_sets = self.residue_name.unique()
-        residue_name_sets = set([n for n in residue_name_sets])
 
         intra_bonds_dict = {}
         for residue_name in residue_name_sets:
@@ -432,7 +391,8 @@ class PDBDataFrame(pd.DataFrame):
 
         bonds: dict = {}
         # intro bonds
-        for chain_id, residue_name, residue_number in self.atoms.residue_list:
+        all_residues = PDBDataFrame.get_residue_list(self.atoms, include_heteros=True)
+        for chain_id, residue_name, residue_number in all_residues:
             residue = (
                 self.atoms.chain_ids([chain_id])
                 .residue_numbers(residue_number)
@@ -483,7 +443,33 @@ class PDBDataFrame(pd.DataFrame):
         for i, numbers in enumerate(s_atom_matrix):
             if s_dis_matrix[i] < 9.0:  # 3.0 A is used as cutoff
                 bonds[(numbers[0], numbers[1])] = "SING"
-
+        # inter bonds for other pairs
+        dis_matrix = self.atoms.distance_matrix
+        res_name_matrix = combinations(self.atoms.residue_name, 2)
+        atom_number_matrix = combinations(self.atoms.atom_number, 2)
+        element_symbol_matrix = combinations(self.atoms.element_symbol, 2)
+        element_set = self.element_set
+        if "D" in element_set or "T" in element_set:
+            element_set.update({"H"})
+        single_bonds, double_bonds, triple_bonds = get_covalent_bond_cutoffs(
+            element_set
+        )
+        for i, (names, numbers, symbols) in enumerate(
+            zip(res_name_matrix, atom_number_matrix, element_symbol_matrix)
+        ):
+            first_res = names[0].strip()
+            second_res = names[1].strip()
+            first_ele = symbols[0]
+            second_ele = symbols[1]
+            if first_res == "HOH" or second_res == "HOH":
+                continue
+            if not (first_res in RESIDUE_CODES and second_res in RESIDUE_CODES):
+                if dis_matrix[i] <= triple_bonds[(first_ele, second_ele)]:
+                    bonds[numbers] = "TRIP"
+                elif dis_matrix[i] <= double_bonds[(first_ele, second_ele)]:
+                    bonds[numbers] = "DOUB"
+                elif dis_matrix[i] <= single_bonds[(first_ele, second_ele)]:
+                    bonds[numbers] = "SING"
         return bonds
 
     @property
@@ -1428,11 +1414,15 @@ class PDBDataFrame(pd.DataFrame):
         return self.atoms[np.isin(self.atoms[num_col_name].values, value)]
 
     @classmethod
-    def get_residue_list(cls, pdb_df: Self) -> list[tuple]:
+    def get_residue_list(
+        cls, pdb_df: Self, include_heteros: bool = False
+    ) -> list[tuple]:
         """Gets the list of residues given a ``PDBDataFrame`` object.
 
         Args:
             pdb_df (required): a ``PDBDataFrame`` object.
+            include_heteros (optional): whether to include hetero ligands.
+                Defaults to **False**.
 
         Returns:
             a list of residues as (``chain_id``, ``residue_name``, ``residue_number``).
@@ -1441,7 +1431,7 @@ class PDBDataFrame(pd.DataFrame):
         for chain, residue_name, residue_number in zip(
             pdb_df["chain_id"], pdb_df["residue_name"], pdb_df["residue_number"]
         ):
-            if residue_name not in pdb_df.RESIDUE_CODES:
+            if not include_heteros and residue_name not in pdb_df.RESIDUE_CODES:
                 continue
             residue = (chain, residue_name, residue_number)
             if len(all_residues) == 0:

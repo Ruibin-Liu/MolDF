@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import warnings
+from itertools import product
 from pathlib import Path
 
 import numpy as np  # type: ignore
@@ -15,9 +16,9 @@ import pandas as pd  # type: ignore
 from moldf.read_pdbx import read_pdbx
 
 
-def get_covalent_radii(
+def get_covalent_bond_cutoffs(
     element_symbols: list | set, single_radii_set: str | None = None
-) -> pd.DataFrame:
+) -> tuple[dict, dict, dict]:
     """Gets the DataFrame for additive covalent radii of relevant elements.
 
     Args:
@@ -32,7 +33,8 @@ def get_covalent_radii(
         ValueError: if the ``single_radii_set`` is not valid.
 
     Returns:
-        DataFrame of the covalent radii cutoffs for the queried element symbols.
+        a tuple of the three dictionaries of the distance cutoffs for the pairs of
+            the queried element symbols: (single_bonds, double_bonds, triple_bonds).
     """
     if single_radii_set is None:
         single_radii_set = "single_C"
@@ -57,12 +59,52 @@ def get_covalent_radii(
         element_set.update({"H"})
     covalent_radii = covalent_radii[covalent_radii.element_symbol.isin(element_set)]
 
-    if single_radii_set == "single_C":
-        covalent_radii.drop(columns=["single_PA"], inplace=True)
-    else:
-        covalent_radii.drop(columns=["single_C"], inplace=True)
+    single_bonds = {}
+    for first, second in product(element_set, repeat=2):
+        first_radius = covalent_radii[covalent_radii.element_symbol == first][
+            single_radii_set
+        ].to_list()[0]
+        second_radius = covalent_radii[covalent_radii.element_symbol == second][
+            single_radii_set
+        ].to_list()[0]
+        first = first.rjust(2)
+        second = second.rjust(2)
+        single_bonds[(first, second)] = (
+            (first_radius + second_radius) / 100 + 0.2
+        ) ** 2
+        single_bonds[(second, first)] = single_bonds[(first, second)]
+        # TODO: make it possible to use 'single_PA' as radii criteria option.
+        # Is it possible to fit a function purely based on closest 6 distances?
+    double_bonds = {}
+    for first, second in product(element_set, repeat=2):
+        first_radius = covalent_radii[
+            covalent_radii.element_symbol.str.upper() == first
+        ]["double"].to_list()[0]
+        second_radius = covalent_radii[
+            covalent_radii.element_symbol.str.upper() == second
+        ]["double"].to_list()[0]
+        first = first.rjust(2)
+        second = second.rjust(2)
+        double_bonds[(first, second)] = (
+            (first_radius + second_radius) / 100 + 0.05
+        ) ** 2
+        double_bonds[(second, first)] = double_bonds[(first, second)]
+    triple_bonds = {}
+    for first, second in product(element_set, repeat=2):
+        first_radius = covalent_radii[
+            covalent_radii.element_symbol.str.upper() == first
+        ]["triple"].to_list()[0]
+        second_radius = covalent_radii[
+            covalent_radii.element_symbol.str.upper() == second
+        ]["triple"].to_list()[0]
+        first = first.rjust(2)
+        second = second.rjust(2)
+        triple_bonds[(first, second)] = (
+            (first_radius + second_radius) / 100 + 0.05
+        ) ** 2
+        triple_bonds[(second, first)] = triple_bonds[(first, second)]
 
-    return covalent_radii
+    return single_bonds, double_bonds, triple_bonds
 
 
 def get_residue_template(

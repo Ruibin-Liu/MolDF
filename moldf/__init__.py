@@ -14,7 +14,7 @@
 ### 3. Write a dictionary of Pandas DataFrames into mmCIF/PDB files.
 """  # noqa
 from moldf.constants import AMINO_ACIDS, ELEMENT_MASSES
-from moldf.covalent_bond import get_covalent_radii
+from moldf.covalent_bond import get_covalent_bond_cutoffs, get_residue_template
 from moldf.pdb_dataframe import PDBDataFrame
 from moldf.read_mol2 import read_mol2
 from moldf.read_pdb import read_pdb
@@ -34,7 +34,8 @@ __all__ = [
     "write_pdb",
     "read_mol2",
     "write_mol2",
-    "get_covalent_radii",
+    "get_covalent_bond_cutoffs",
+    "get_residue_template",
     "split_line",
     "AMINO_ACIDS",
     "ELEMENT_MASSES",

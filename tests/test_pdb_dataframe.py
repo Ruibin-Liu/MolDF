@@ -275,6 +275,8 @@ def test_get_bonds_by_template():
     bonds = pdb_df.residue_numbers([259, 260]).get_bonds_by_template()
     assert bonds[(1, 2)] == "SING", "N-CA bond incorrect for 5K9I"
     assert bonds[(3, 6)] == "SING", "Peptide bond incorrect for 5K9I"
+    bonds = pdb_df.chain_ids(["A"]).residue_numbers([295, 601]).get_bonds_by_template()
+    assert bonds[(296, 4211)] == "SING", "O44-Lys bond incorrect for 5K9I"
 
     pdb = read_pdb(
         pdb_id="1eru",
@@ -290,6 +292,9 @@ def test_get_bonds_by_template():
     assert bonds[(244, 261)] == "SING", "Disulfide bond incorrect for 1ERU"
     os.remove(Path(CFD, "test_files", "1ERU.pdb"))
     shutil.rmtree("./template_files")
+
+
+test_get_bonds_by_template()
 
 
 def test_get_residue_list():
