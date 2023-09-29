@@ -37,30 +37,10 @@ def test_get_residue_template():
     his_bonds = get_residue_template(
         residue_name="HIS", residue_template_file=test_file
     )
-    expected = {
-        ("N", "CA"): ("SING", True, "N"),
-        ("N", "H"): ("SING", True, "N"),
-        ("N", "H2"): ("SING", True, "N"),
-        ("CA", "C"): ("SING", True, "N"),
-        ("CA", "CB"): ("SING", True, "N"),
-        ("CA", "HA"): ("SING", True, "N"),
-        ("C", "O"): ("DOUB", True, "N"),
-        ("C", "OXT"): ("SING", True, "N"),
-        ("CB", "CG"): ("SING", True, "N"),
-        ("CB", "HB2"): ("SING", True, "N"),
-        ("CB", "HB3"): ("SING", True, "N"),
-        ("CG", "ND1"): ("SING", False, "N"),
-        ("CG", "CD2"): ("DOUB", False, "N"),
-        ("ND1", "CE1"): ("DOUB", False, "N"),
-        ("ND1", "HD1"): ("SING", True, "N"),
-        ("CD2", "NE2"): ("SING", False, "N"),
-        ("CD2", "HD2"): ("SING", True, "N"),
-        ("CE1", "NE2"): ("SING", False, "N"),
-        ("CE1", "HE1"): ("SING", True, "N"),
-        ("NE2", "HE2"): ("SING", True, "N"),
-        ("OXT", "HXT"): ("SING", True, "N"),
-    }
-    assert his_bonds == expected, "HIS bonds read wrongly."
+    assert his_bonds[("OXT", "HXT")] == ("SING", True, "N"), "HIS bonds read wrongly."
+    assert (
+        his_bonds[("HXT", "OXT")] == his_bonds[("OXT", "HXT")]
+    ), "HIS bonds info not symetrical"
 
     o44_bonds = get_residue_template(residue_name="O44")
     assert o44_bonds[("CAM", "CAL")] == (

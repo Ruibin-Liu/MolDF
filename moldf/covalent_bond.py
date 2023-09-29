@@ -200,5 +200,6 @@ def get_residue_template(
             is_aromatic,
             sf,  # stereo_flag
         )
+        results[(id2, id1)] = results[(id1, id2)]
 
     return results

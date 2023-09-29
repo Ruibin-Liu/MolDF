@@ -405,13 +405,11 @@ class PDBDataFrame(pd.DataFrame):
                 first_name = first_name.strip()
                 second_name = second_name.strip()
                 first_number, second_number = numbers
-                a = intra_bonds_dict[residue_name].get((first_name, second_name))
-                b = intra_bonds_dict[residue_name].get((second_name, first_name))
-                # print(first_name, second_name, intra_bonds_dict[residue_name])
-                if a:
-                    bonds[(first_number, second_number)] = a[0]
-                elif b:
-                    bonds[(first_number, second_number)] = b[0]
+                bond_type = intra_bonds_dict[residue_name].get(
+                    (first_name, second_name)
+                )
+                if bond_type:
+                    bonds[(first_number, second_number)] = bond_type[0]
         # inter bonds for peptide bonds
         carb_atoms = self.atoms.atom_names(["C"])
         nitro_atoms = self.atoms.atom_names(["N"])
