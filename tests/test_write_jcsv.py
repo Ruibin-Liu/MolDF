@@ -30,6 +30,7 @@ def test_write_jcsv():
 
     compared_to = [CFD, "test_files", "mol2_moldf.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
+    filecmp.clear_cache()
     assert filecmp.cmp(write_to, compared_to), "mol2 jcsv writing incorrect."
     os.remove(write_to)
 
@@ -43,6 +44,7 @@ def test_write_jcsv():
 
     compared_to = [CFD, "test_files", "pdb_moldf.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
+    filecmp.clear_cache()
     assert filecmp.cmp(write_to, compared_to), "pdb jcsv writing incorrect."
     os.remove(write_to)
 
@@ -56,5 +58,6 @@ def test_write_jcsv():
 
     compared_to = [CFD, "test_files", "pdbx_moldf.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
+    filecmp.clear_cache()
     assert filecmp.cmp(write_to, compared_to), "pdbx jcsv writing incorrect."
     os.remove(write_to)
