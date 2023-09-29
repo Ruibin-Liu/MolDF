@@ -41,4 +41,4 @@ def write_jcsv(
     with open(file_name, "w", encoding="utf-8") as out_file:
         for key, df in data.items():
             out_file.write(f"#{key}\n")
-            out_file.write(df.to_csv(index=False))
+            out_file.write(df.to_csv(index=False, line_terminator="\n"))
