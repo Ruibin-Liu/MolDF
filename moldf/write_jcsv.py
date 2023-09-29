@@ -41,4 +41,11 @@ def write_jcsv(
     with open(file_name, "w", encoding="utf-8") as out_file:
         for key, df in data.items():
             out_file.write(f"#{key}\n")
-            out_file.write(df.to_csv(index=False, line_terminator="\n"))
+            try:
+                out_file.write(
+                    df.to_csv(index=False, lineterminator="\n")
+                )  # Pandas >= 1.5
+            except TypeError:
+                out_file.write(
+                    df.to_csv(index=False, line_terminator="\n")
+                )  # Pandas < 1.5
