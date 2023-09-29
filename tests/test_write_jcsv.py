@@ -26,9 +26,11 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "mol2.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(mol2, write_to)
+    write_jcsv(mol2, write_to, index=False)
 
     compared_to = [CFD, "test_files", "mol2_moldf.jcsv"]
+    if os.name == "nt":
+        compared_to = [CFD, "test_files", "mol2_moldf_nt.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
     filecmp.clear_cache()
     assert filecmp.cmp(
@@ -42,9 +44,11 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "pdb.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(pdb, write_to)
+    write_jcsv(pdb, write_to, index=False)
 
     compared_to = [CFD, "test_files", "pdb_moldf.jcsv"]
+    if os.name == "nt":
+        compared_to = [CFD, "test_files", "pdb_moldf_nt.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
     filecmp.clear_cache()
     assert filecmp.cmp(
@@ -58,9 +62,11 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "pdbx.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(pdbx, write_to)
+    write_jcsv(pdbx, write_to, index=False)
 
     compared_to = [CFD, "test_files", "pdbx_moldf.jcsv"]
+    if os.name == "nt":
+        compared_to = [CFD, "test_files", "pdbx_moldf_nt.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
     filecmp.clear_cache()
     assert filecmp.cmp(

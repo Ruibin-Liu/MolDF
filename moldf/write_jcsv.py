@@ -13,6 +13,7 @@ import pandas as pd  # type: ignore
 def write_jcsv(
     data: dict[str, pd.DataFrame],
     file_name: str | os.PathLike | None = None,
+    **kwargs,
 ) -> None:
     """Write a dict of ``Pandas DataFrame`` s into a JCSV file.
     See https://github.com/Ruibin-Liu/JCSV for definitions.
@@ -22,6 +23,8 @@ def write_jcsv(
         file_name (optional): file name to write a JCSV file. If ``None``,
             ``moldf_output.jcsv`` will be used as the file name.
             Defaults to **None**.
+        **kwargs: keyword arguments for ``pd.DataFrame.to_csv``. Invalid ones are ignored.
+            Check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_csv.html
 
     Raises:
         TypeError: if ``data`` is not a valid dict of ``DataFrame``.
@@ -38,14 +41,13 @@ def write_jcsv(
         if '"' in key:
             raise NotImplementedError(f'Column name {key} has " symbol, not supported.')
 
+    exclusion = ["self", "path_or_buf", "df", "formatter"]
+    to_csv_keys = [
+        key for key in pd.DataFrame.to_csv.__code__.co_varnames if key not in exclusion
+    ]
+    kwargs = {k: v for k, v in kwargs.items() if k in to_csv_keys}
+
     with open(file_name, "w", encoding="utf-8") as out_file:
         for key, df in data.items():
             out_file.write(f"#{key}\n")
-            try:
-                out_file.write(
-                    df.to_csv(index=False, lineterminator="\n")
-                )  # Pandas >= 1.5
-            except TypeError:
-                out_file.write(
-                    df.to_csv(index=False, line_terminator="\n")
-                )  # Pandas < 1.5
+            out_file.write(df.to_csv(**kwargs))
