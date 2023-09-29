@@ -32,7 +32,6 @@ def test_write_jcsv():
     if os.name == "nt":
         compared_to = [CFD, "test_files", "mol2_moldf_nt.jcsv"]
     compared_to = f"{os.sep}".join(compared_to)
-    filecmp.clear_cache()
     assert filecmp.cmp(
         write_to, compared_to, shallow=False
     ), "mol2 jcsv writing incorrect."
