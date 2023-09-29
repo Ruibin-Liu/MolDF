@@ -20,6 +20,7 @@ from moldf.read_mol2 import read_mol2
 from moldf.read_pdb import read_pdb
 from moldf.read_pdbx import read_pdbx
 from moldf.split_line import split_line
+from moldf.write_jcsv import write_jcsv
 from moldf.write_mol2 import write_mol2
 from moldf.write_pdb import write_pdb
 from moldf.write_pdbx import write_pdbx
@@ -34,6 +35,7 @@ __all__ = [
     "write_pdb",
     "read_mol2",
     "write_mol2",
+    "write_jcsv",
     "get_covalent_bond_cutoffs",
     "get_residue_template",
     "split_line",
