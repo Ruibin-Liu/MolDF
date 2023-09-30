@@ -749,7 +749,7 @@ class PDBDataFrame(pd.DataFrame):
                         message += "not equal to the selection length"
                         message += f" {n_selection}."
                         raise ValueError(message)
-                    align_weights[mask] = weights
+                    align_weights[mask] = np.array(weights)
             elif weights is not None:
                 if not isinstance(weights, list):
                     message = f"'weights' type is {type(weights)}, but list"
@@ -760,7 +760,7 @@ class PDBDataFrame(pd.DataFrame):
                     message += "not equal to the number of atoms"
                     message += f" {n_atoms} without 'selection'."
                     raise ValueError(message)
-                align_weights = weights
+                align_weights = np.array(weights)
 
         first_centered = False
         for other_coords in other_coords_list:
