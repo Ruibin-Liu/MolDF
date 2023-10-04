@@ -154,13 +154,13 @@ class PDBDataFrame(pd.DataFrame):
             keep_original (optional): whether to keep the original columns in the PDBx
                 '_atom_site' DataFrame. Defaults to **False**.
         """
-        for pdb_name, pdbx_name in PDBX_COLS.items():
+        pdbx_cols = {k: v for k, v in PDBX_COLS.items() if v in self.columns}
+        for pdb_name, pdbx_name in pdbx_cols.items():
             self[pdb_name] = self[pdbx_name]
         if not keep_original:
-            drop_columns = [col for col in self.columns if col not in PDBX_COLS.keys()]
+            drop_columns = [col for col in self.columns if col not in pdbx_cols.keys()]
             self.drop(columns=drop_columns, inplace=True)
         self._pdb_format = "PDBx"
-        self = self[list(PDBX_COLS.keys())]
 
     @property
     def pdb_format(self) -> str:
