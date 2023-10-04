@@ -214,7 +214,6 @@ def read_pdbx(
     if "_atom_site" in data:
         col_dtypes = {
             "id": "int",
-            "label_entity_id": "int",
             "label_seq_id": "int",
             "Cartn_x": "float",
             "Cartn_y": "float",
