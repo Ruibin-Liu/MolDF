@@ -16,6 +16,7 @@
 from moldf.constants import AMINO_ACIDS, ELEMENT_MASSES
 from moldf.covalent_bond import get_covalent_bond_cutoffs, get_residue_template
 from moldf.pdb_dataframe import PDBDataFrame
+from moldf.read_jcsv import read_jcsv
 from moldf.read_mol2 import read_mol2
 from moldf.read_pdb import read_pdb
 from moldf.read_pdbx import read_pdbx
@@ -35,6 +36,7 @@ __all__ = [
     "write_pdb",
     "read_mol2",
     "write_mol2",
+    "read_jcsv",
     "write_jcsv",
     "get_covalent_bond_cutoffs",
     "get_residue_template",
