@@ -26,6 +26,13 @@ MOL2 Reader
    :members:
    :private-members:
 
+JCSV Reader
+-------------------------
+
+.. automodule:: moldf.read_jcsv
+   :members:
+   :private-members:
+
 PDBDataFrame Class
 -----------------------------
 .. _PDBDataFrame:

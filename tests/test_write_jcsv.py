@@ -26,7 +26,7 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "mol2.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(mol2, write_to, index=False)
+    write_jcsv(mol2, write_to, write_meta=False, index=False)
 
     compared_to = [CFD, "test_files", "mol2_moldf.jcsv"]
     if os.name == "nt":
@@ -43,7 +43,7 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "pdb.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(pdb, write_to, index=False)
+    write_jcsv(pdb, write_to, write_meta=False, index=False)
 
     compared_to = [CFD, "test_files", "pdb_moldf.jcsv"]
     if os.name == "nt":
@@ -61,7 +61,7 @@ def test_write_jcsv():
 
     write_to = [CFD, "test_files", "pdbx.jcsv"]
     write_to = f"{os.sep}".join(write_to)
-    write_jcsv(pdbx, write_to, index=False)
+    write_jcsv(pdbx, write_to, write_meta=False, index=False)
 
     compared_to = [CFD, "test_files", "pdbx_moldf.jcsv"]
     if os.name == "nt":
@@ -72,3 +72,31 @@ def test_write_jcsv():
         write_to, compared_to, shallow=False
     ), "pdbx jcsv writing incorrect."
     os.remove(write_to)
+
+
+def test_write_jcsv_with_meta():
+    """
+    Test write_jcsv function for with_meta=True
+    """
+    test_file = [CFD, "test_files", "HIS.cif"]
+    test_file = f"{os.sep}".join(test_file)
+    pdbx = read_pdbx(pdbx_file=test_file, category_names=["all"])
+
+    write_to = [CFD, "test_files", "pdbx.jcsv"]
+    write_to = f"{os.sep}".join(write_to)
+    write_jcsv(pdbx, write_to, write_meta=True, index=False)
+
+    compared_to = [CFD, "test_files", "pdbx_moldf_meta.jcsv"]
+    if os.name == "nt":
+        assert True  # pass windows test for now
+        return
+        # compared_to = [CFD, "test_files", "pdbx_moldf_nt.jcsv"]
+    compared_to = f"{os.sep}".join(compared_to)
+    filecmp.clear_cache()
+    assert filecmp.cmp(
+        write_to, compared_to, shallow=False
+    ), "pdbx jcsv writing incorrect."
+    os.remove(write_to)
+
+
+test_write_jcsv_with_meta()
