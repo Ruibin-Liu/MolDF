@@ -64,7 +64,7 @@ MOL2 Writer
    :private-members:
 
 JCSV Writer
-_________________________
+-------------------------
 
 .. automodule:: moldf.write_jcsv
    :members:
