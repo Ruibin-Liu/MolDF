@@ -84,5 +84,5 @@ def test_read_pdbx():
         f"./PDBx_files/{uniprot_id.upper()}.cif"
     ), "File not saved to PDBx_files if pdbx_file_dir not provided."
     assert (
-        pdb_df.head(1).label_seq_id == 1
+        pdb_df.head(1).label_seq_id == "1"
     ).item(), "First P01116 residue number is not 1."
