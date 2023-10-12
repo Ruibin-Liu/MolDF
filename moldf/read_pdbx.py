@@ -74,30 +74,40 @@ def read_pdbx(
         raise ValueError("At least one of pdb_id and pdbx_file has to be given.")
     elif pdbx_file is None:
         pdb_id = str(pdb_id).upper()
-        if len(pdb_id) == 4:
-            pdbx_file_url = f"https://files.rcsb.org/view/{pdb_id.upper()}.cif"
-        elif len(pdb_id) < 4:
-            pdbx_file_url = f"https://files.rcsb.org/ligands/view/{pdb_id.upper()}.cif"
+
+        if pdbx_file_dir is None:
+            pdbx_file_dir = "./PDBx_files"
+        pdbx_file_dir = Path(pdbx_file_dir)
+        file_path_1 = Path(pdbx_file_dir, f"{pdb_id}.cif")
+        file_path_2 = Path(pdbx_file_dir, f"{pdb_id.lower()}.cif")
+        if os.path.exists(file_path_1):
+            pdbx_file_handle: io.TextIOWrapper | io.StringIO = open(
+                file_path_1, "r", encoding="utf-8"
+            )
+        elif os.path.exists(file_path_2):
+            pdbx_file_handle = open(file_path_2, "r", encoding="utf-8")
         else:
-            pdbx_file_url = f"https://alphafold.ebi.ac.uk/files/AF-{pdb_id.upper()}-F1-model_v{AF2_MODEL}.cif"
-        try:
-            with urllib.request.urlopen(pdbx_file_url) as response:
-                raw_data = response.read()
-            text = raw_data.decode("utf-8")
-            pdbx_file_handle: io.TextIOWrapper | io.StringIO = io.StringIO(text)
-            if save_pdbx_file:
-                if pdbx_file_dir is None:
-                    pdbx_file_dir = "./PDBx_files"
-                pdbx_file_dir = Path(pdbx_file_dir)
-                if not pdbx_file_dir.exists():
-                    pdbx_file_dir.mkdir(parents=True, exist_ok=True)
-                file_path = Path(pdbx_file_dir, f"{pdb_id}.cif")
-                with open(file_path, "w", encoding="utf-8") as p_file:
-                    p_file.write(text)
-        except urllib.error.HTTPError as http_error:
-            raise ValueError(
-                f"Cannot download PDBx file from url {pdbx_file_url}."
-            ) from http_error
+            if len(pdb_id) == 4:
+                pdbx_file_url = f"https://files.rcsb.org/view/{pdb_id}.cif"
+            elif len(pdb_id) < 4:
+                pdbx_file_url = f"https://files.rcsb.org/ligands/view/{pdb_id}.cif"
+            else:
+                pdbx_file_url = f"https://alphafold.ebi.ac.uk/files/AF-{pdb_id}-F1-model_v{AF2_MODEL}.cif"
+            try:
+                with urllib.request.urlopen(pdbx_file_url) as response:
+                    raw_data = response.read()
+                text = raw_data.decode("utf-8")
+                pdbx_file_handle = io.StringIO(text)
+                if save_pdbx_file:
+                    if not pdbx_file_dir.exists():
+                        pdbx_file_dir.mkdir(parents=True, exist_ok=True)
+                    file_path = Path(pdbx_file_dir, f"{pdb_id}.cif")
+                    with open(file_path, "w", encoding="utf-8") as p_file:
+                        p_file.write(text)
+            except urllib.error.HTTPError as http_error:
+                raise ValueError(
+                    f"Cannot download PDBx file from url {pdbx_file_url}."
+                ) from http_error
     else:
         pdbx_file = Path(pdbx_file)
         if not pdbx_file.exists():
