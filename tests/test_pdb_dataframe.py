@@ -680,3 +680,19 @@ def test_nmr_models():
     sub_df = pdb_df.nmr_models([1, 2, 20])
     expected = pdb_df
     assert sub_df == expected, "nmr_models selection failed when there is only 1 model."
+
+# kept for debugging
+# def test_x():
+#     """Testing getting properties."""
+#     test_file = "fixed_8EG5_A-B-C-D.pdb"
+#     pdb = read_pdb(
+#         pdb_file=test_file,
+#         category_names=["_atom_site"],
+#         allow_chimera=True,
+#         need_ter_lines=True,
+#     )
+#     df = pdb["_atom_site"]
+#     pdb_df = PDBDataFrame(df)
+#     print(pdb_df.chain_list)
+
+# test_x()

@@ -486,7 +486,7 @@ class PDBDataFrame(pd.DataFrame):
     @property
     def chain_list(self) -> list:
         """
-        Gets all chain ids as a list
+        Gets all chain ids as a list.
         """
         return PDBDataFrame.get_chain_list(self)
 
@@ -494,7 +494,7 @@ class PDBDataFrame(pd.DataFrame):
     def residue_list(self) -> list[tuple]:
         """
         Gets all residues as a list of tuple
-            (``chain_id``, ``residue_name``, ``residue_number``)
+            (``chain_id``, ``residue_name``, ``residue_number``).
         """
         return PDBDataFrame.get_residue_list(self)
 
@@ -1442,7 +1442,9 @@ class PDBDataFrame(pd.DataFrame):
         for chain_id, _, residue_number in pdb_df.residue_list:
             if not chains:
                 chains.append(chain_id)
-            if residue_number < pre_residue_number:
+            if chain_id != chains[-1]:
+                chains.append(chain_id)
+            elif residue_number < pre_residue_number:
                 chains.append(chain_id)
             pre_residue_number = residue_number
         return chains
