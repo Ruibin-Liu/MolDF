@@ -172,7 +172,7 @@ def read_pdb(
 
     if pdb_file is not None:  # This check is just for mypy
         file_stat = os.stat(pdb_file)
-        total_lines = int(file_stat.st_size / 81)
+        total_lines = int(file_stat.st_size / 81) + 1
     else:
         total_lines = 100000
     n_record = 0
