@@ -1423,17 +1423,19 @@ class PDBDataFrame(pd.DataFrame):
     def get_chain_list(
         cls,
         pdb_df: Self,
-        include_heteros: bool = False,
     ) -> list:
         """Gets the list of chain ids given a ``PDBDataFrame`` object.
 
         Args:
             pdb_df (required): a ``PDBDataFrame`` object.
-            include_heteros (optional): whether to include hetero ligands.
-                Defaults to **False**.
 
         Returns:
             a list of chain ids.
+
+        Warning:
+            This method relies on the original and standard numbering of the atoms and
+                residues in the DataFrame. Therefore, any selecting or sorting of the it
+                can lead to wrong results.
         """
         chains: list = []
         pre_residue_number = 0
@@ -1458,6 +1460,11 @@ class PDBDataFrame(pd.DataFrame):
 
         Returns:
             a list of residues as (``chain_id``, ``residue_name``, ``residue_number``).
+
+        Warning:
+            This method relies on the original and standard numbering of the atoms and
+                residues in the DataFrame. Therefore, any selecting or sorting of the it
+                can lead to wrong results.
         """
         all_residues: list[tuple] = []
         prev_atom_number = 0
