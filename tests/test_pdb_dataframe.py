@@ -681,6 +681,7 @@ def test_nmr_models():
     expected = pdb_df
     assert sub_df == expected, "nmr_models selection failed when there is only 1 model."
 
+
 # kept for debugging
 # def test_x():
 #     """Testing getting properties."""
