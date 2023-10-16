@@ -43,6 +43,7 @@ def read_pdbx(
     save_pdbx_file: bool = True,
     pdbx_file_dir: str | os.PathLike | None = None,
     category_names: list | None = None,
+    convert_dtype: bool = False,
 ) -> dict[str, pd.DataFrame]:
     """Reads a ``.cif`` file's categories into a ``dict`` of ``Pandas DataFrame`` s.
 
@@ -59,6 +60,8 @@ def read_pdbx(
         pdbx_file_dir (optional): directory to save fetched PDBx files. If ``None`` but
             ``save_pdbx_file`` is ``True``, './PDBx_files' is used.
             Defaults to **None**.
+        convert_dtype (optional): whether to convert the data types according to the
+            RCSB mmcif specifications. Defaults to **False**.
 
     Returns:
         A dict of ``Pandas DataFrame`` s corresponding to required categories.
@@ -221,10 +224,10 @@ def read_pdbx(
 
             if not processing_category:
                 line = pdbx_file_handle.readline()
-    if "_atom_site" in data:
+    if "_atom_site" in data and convert_dtype:
         col_dtypes = {
             "id": "int",
-            # "label_seq_id": "int", # many PDBs have '.'
+            "label_seq_id": "int",
             "Cartn_x": "float",
             "Cartn_y": "float",
             "Cartn_z": "float",
@@ -239,6 +242,6 @@ def read_pdbx(
             for col_name, data_type in col_dtypes.items()
             if col_name in data["_atom_site"]
         }
-
         data["_atom_site"] = data["_atom_site"].astype(col_dtypes)
+
     return data
