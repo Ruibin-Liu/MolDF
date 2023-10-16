@@ -119,6 +119,8 @@ def test_property_getter():
         259,
     ), "Residue list not recovered."
 
+    assert pdb_df.chain_list == ["A", "B"]
+
     backbone = pdb_df[
         (pdb_df.record_name == "ATOM  ")
         & (pdb_df.atom_name.isin([" C  ", " CA ", " N  ", " O  "]))
@@ -292,9 +294,6 @@ def test_get_bonds_by_template():
     assert bonds[(244, 261)] == "SING", "Disulfide bond incorrect for 1ERU"
     os.remove(Path(CFD, "test_files", "1ERU.pdb"))
     shutil.rmtree("./template_files")
-
-
-test_get_bonds_by_template()
 
 
 def test_get_residue_list():

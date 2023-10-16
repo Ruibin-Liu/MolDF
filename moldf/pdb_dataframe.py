@@ -20,6 +20,7 @@ like ``df.atom_names([names]).residue_numbers([numbers])``.
 """
 from __future__ import annotations
 
+import copy
 import functools
 import warnings
 from collections import defaultdict
@@ -483,6 +484,13 @@ class PDBDataFrame(pd.DataFrame):
         return chain_sequence
 
     @property
+    def chain_list(self) -> list:
+        """
+        Gets all chain ids as a list
+        """
+        return PDBDataFrame.get_chain_list(self)
+
+    @property
     def residue_list(self) -> list[tuple]:
         """
         Gets all residues as a list of tuple
@@ -584,9 +592,9 @@ class PDBDataFrame(pd.DataFrame):
 
         n_chain_ids = len(self.chain_id.unique())
 
-        ter_oxt_residues = ter_residues
+        ter_oxt_residues = copy.deepcopy(ter_residues)
         for oxt_residue in oxt_residues:
-            if oxt_residue not in ter_oxt_residues:
+            if oxt_residue not in ter_oxt_residues or not ter_residues:
                 ter_oxt_residues.append(oxt_residue)
 
         return max(len(ter_oxt_residues), n_chain_ids)
@@ -1412,6 +1420,32 @@ class PDBDataFrame(pd.DataFrame):
         return self.atoms[np.isin(self.atoms[num_col_name].values, value)]
 
     @classmethod
+    def get_chain_list(
+        cls,
+        pdb_df: Self,
+        include_heteros: bool = False,
+    ) -> list:
+        """Gets the list of chain ids given a ``PDBDataFrame`` object.
+
+        Args:
+            pdb_df (required): a ``PDBDataFrame`` object.
+            include_heteros (optional): whether to include hetero ligands.
+                Defaults to **False**.
+
+        Returns:
+            a list of chain ids.
+        """
+        chains: list = []
+        pre_residue_number = 0
+        for chain_id, _, residue_number in pdb_df.residue_list:
+            if not chains:
+                chains.append(chain_id)
+            if residue_number < pre_residue_number:
+                chains.append(chain_id)
+            pre_residue_number = residue_number
+        return chains
+
+    @classmethod
     def get_residue_list(
         cls, pdb_df: Self, include_heteros: bool = False
     ) -> list[tuple]:
@@ -1426,8 +1460,12 @@ class PDBDataFrame(pd.DataFrame):
             a list of residues as (``chain_id``, ``residue_name``, ``residue_number``).
         """
         all_residues: list[tuple] = []
-        for chain, residue_name, residue_number in zip(
-            pdb_df["chain_id"], pdb_df["residue_name"], pdb_df["residue_number"]
+        prev_atom_number = 0
+        for atom_number, chain, residue_name, residue_number in zip(
+            pdb_df["atom_number"],
+            pdb_df["chain_id"],
+            pdb_df["residue_name"],
+            pdb_df["residue_number"],
         ):
             if not include_heteros and residue_name not in pdb_df.RESIDUE_CODES:
                 continue
@@ -1436,6 +1474,9 @@ class PDBDataFrame(pd.DataFrame):
                 all_residues.append(residue)
             elif residue != all_residues[-1]:
                 all_residues.append(residue)
+            elif residue == all_residues[-1] and (atom_number - prev_atom_number) > 1:
+                all_residues.append(residue)
+            prev_atom_number = atom_number
         return all_residues
 
     @classmethod
