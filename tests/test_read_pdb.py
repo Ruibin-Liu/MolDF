@@ -114,3 +114,24 @@ def test_read_seq_res():
     assert seq_df["chain_sequence"].to_list() == [
         "MLSDEDFKAVFGMTRSAFANLPLWKQQNLKKEKGLF"
     ], "1VII sequence not read in correctly."
+
+
+def test_read_hetnam():
+    """Test reading the 'HETNAM' section."""
+    pdb_id = "5U8L"
+    pdb = read_pdb(
+        pdb_id=pdb_id,
+        category_names=["_chem_comp"],
+        save_pdb_file=True,
+        allow_chimera=False,
+    )
+    chem_comp = pdb["_chem_comp"]
+    assert chem_comp.shape == (3, 11), "5U8L HET records shape not right."
+    assert chem_comp.het_id.to_list() == [
+        "O44",
+        "SO4",
+        "GOL",
+    ], "5U8L HET records het_id not right."
+
+
+test_read_hetnam()

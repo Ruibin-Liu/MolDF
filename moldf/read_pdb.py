@@ -29,7 +29,7 @@ import pandas as pd  # type: ignore
 
 from .constants import AMINO_ACIDS
 
-IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res"]
+IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res", "_chem_comp"]
 """PDB categories that are currently implemented."""
 
 ATOM_SITE = ("ATOM", "HETATM", "TER")
@@ -37,6 +37,9 @@ ATOM_SITE = ("ATOM", "HETATM", "TER")
 
 NMR_MDL = ("NUMMDL", "MODEL", "ENDMDL")
 """``_atom_site`` additional lines."""
+
+CHEM_COMP = ("HET   ", "HETNAM", "FORMUL", "HETSYN")
+"""``_chem_comp`` lines."""
 
 AF2_MODEL = 4
 """For AlphaFold structures, the version to use."""
@@ -67,6 +70,10 @@ def read_pdb(
                 ``NUMMDL``, ``MODEL``, and ``ENDMDL`` lines.
 
                 2. ``_seq_res``: ``SEQRES`` lines.
+
+                3. ``_chem_comp``: all lines in ``CHEM_COMP`` above. However, only
+                    compounds included in the ``HET   `` lines are extracted which
+                    usually means the water molecule is not included.
 
             Defaults to **None**.
         save_pdb_file (optional): whether to save the fetched PDB file from RCSB
@@ -223,6 +230,64 @@ def read_pdb(
                     if not n_record and "_atom_site" in category_names:
                         n_lines_till_atom_lines += 1
                     line = pdb_file_handle.readline()
+            elif line.startswith(CHEM_COMP) and "_chem_comp" in category_names:
+                # See: https://www.wwpdb.org/documentation/file-format-content/format33/sect4.html
+                comps: list[dict] = []
+                while line.startswith(CHEM_COMP):
+                    if line.startswith("HET   "):
+                        comp: dict[str, str] = {}
+                        het_id = line[7:10].strip()
+                        chain_id = line[12]
+                        seq_num = line[13:17].strip()
+                        i_code = line[17]
+                        num_het_atoms = line[20:25].strip()
+                        text = line[30:70].strip()
+                        comp["het_id"] = het_id
+                        comp["chain_id"] = chain_id
+                        comp["seq_num"] = seq_num
+                        comp["i_code"] = i_code
+                        comp["num_het_atoms"] = num_het_atoms
+                        comp["text"] = text
+                        comps.append(comp)
+                    elif line.startswith("HETNAM"):
+                        continuation = line[8:10].strip()
+                        het_id = line[11:14].strip()
+                        text = line[15:70].strip()
+                        for i, comp in enumerate(comps):
+                            if comp["het_id"] == het_id:
+                                if not continuation:
+                                    comps[i]["name"] = text
+                                else:
+                                    comps[i]["name"] += text
+                    elif line.startswith("HETSYN"):
+                        continuation = line[8:10].strip()
+                        het_id = line[11:14].strip()
+                        het_synonyms = line[15:70].strip()
+                        for i, comp in enumerate(comps):
+                            if comp["het_id"] == het_id:
+                                if not continuation:
+                                    comps[i]["synonyms"] = het_synonyms
+                                else:
+                                    comps[i]["synonyms"] += het_synonyms
+                    elif line.startswith("FORMUL"):
+                        comp_num = int(line[8:10].strip())
+                        het_id = line[12:15].strip()
+                        continuation = line[16:18].strip()
+                        asterisk = line[17]
+                        text = line[19:70].strip()
+                        for i, comp in enumerate(comps):
+                            if comp["het_id"] == het_id:
+                                if not continuation:
+                                    comps[i]["comp_num"] = comp_num
+                                    comps[i]["comp_formula"] = text
+                                    if asterisk == "*":
+                                        comps[i]["is_water"] = True
+                                        comps[i]["comp_formula"] = "H2 O"
+                                    else:
+                                        comps[i]["is_water"] = False
+                                else:
+                                    comps[i]["comp_formula"] += text
+                    line = pdb_file_handle.readline()
 
             if not n_record and "_atom_site" in category_names:
                 n_lines_till_atom_lines += 1
@@ -264,6 +329,8 @@ def read_pdb(
                 "chain_length": chain_num_residues,
             }
         )
+    if "_chem_comp" in category_names:
+        data["_chem_comp"] = pd.DataFrame(comps)
 
     return data
 
