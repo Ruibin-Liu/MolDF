@@ -15,7 +15,7 @@ repos:
         exclude: 'tests/test_files|assets|moldf/covalent_bonds'
 
   - repo: https://github.com/psf/black
-    rev: 23.10.1
+    rev: 23.11.0
     hooks:
       - id: black
         language_version: python3.10
@@ -33,13 +33,13 @@ repos:
         exclude: 'tests/test_files|assets'
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.1
     hooks:
       - id: isort
         files: \.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.6.1
+    rev: v1.7.1
     hooks:
       - id: mypy
         exclude: tests/data
