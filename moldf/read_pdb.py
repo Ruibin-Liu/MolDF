@@ -28,6 +28,7 @@ import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
 from .constants import AMINO_ACIDS
+from .common import open_file
 
 IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res", "_chem_comp"]
 """PDB categories that are currently implemented."""
@@ -134,9 +135,7 @@ def read_pdb(
                 ) from http_error
     else:
         pdb_file = Path(pdb_file)
-        if not pdb_file.exists():
-            raise FileNotFoundError(f"File {pdb_file} not found.")
-        pdb_file_handle = open(pdb_file, "r", encoding="utf-8")
+        pdb_file_handle = open_file(pdb_file)
     if category_names is None:
         category_names = ["_atom_site"]
     for category_name in category_names:
