@@ -27,8 +27,8 @@ from pathlib import Path
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-from .constants import AMINO_ACIDS
 from .common import open_file
+from .constants import AMINO_ACIDS
 
 IMPLEMENTED_PDB_CATS = ["_atom_site", "_seq_res", "_chem_comp"]
 """PDB categories that are currently implemented."""
