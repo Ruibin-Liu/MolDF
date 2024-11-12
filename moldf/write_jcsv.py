@@ -80,4 +80,4 @@ def write_jcsv(
         for key, df in data.items():
             key_line = f"#{key}{line_terminator}"
             out_file.write(key_line)
-            out_file.write(df.to_csv(**kwargs))
+            out_file.write(df.to_csv(index=False, **kwargs))
