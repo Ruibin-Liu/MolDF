@@ -9,7 +9,7 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: 'tests/test_files|assets|moldf/covalent_bonds'
+        exclude: 'tests/test_files|assets|moldf/covalent_bonds|README.md'
       - id: forbid-new-submodules
       - id: trailing-whitespace
         exclude: 'tests/test_files|assets|moldf/covalent_bonds'
