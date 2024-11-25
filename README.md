@@ -63,7 +63,7 @@ You can also put a Uniprot ID in the `pdb_id` keyword to get the AlphaFold2 file
 
 By default, the fetched content will be saved to a file named `<pdb_id>.cif` under the directory given by `pdbx_file_dir` (which by default is your current working directory). You can choose not to save the file by setting `save_pdbx_file=False` in the `read_pdbx` function calling.
 
-#### 1.3. You can read them simutanously:
+#### 1.3. You can read them simultaneously:
 
 ```python
 from moldf import read_pdbx
