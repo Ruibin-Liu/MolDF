@@ -152,4 +152,3 @@ For code quality control, we use `pre-commit` hooks for formatting and type hint
 Try your best to add test cases for bug fixes and new features. We use `pytest` for testing.
 
 For documentation, we should try to follow the [Google Python docstrings style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
-
