@@ -304,6 +304,9 @@ def read_pdb(
 
     if "_atom_site" in category_names:
         df_atom_site = pd.DataFrame.from_records(array[:n_record])
+        # for all string columns, strip whitespace
+        for col in df_atom_site.select_dtypes(include='object').columns:
+            df_atom_site[col] = df_atom_site[col].str.strip()
         data["_atom_site"] = df_atom_site
         if not n_model_lines:
             data["_atom_site"].drop(columns=["nmr_model"], inplace=True)
