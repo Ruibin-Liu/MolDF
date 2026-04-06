@@ -9,6 +9,7 @@ Write a dict of ``Pandas DataFrame`` back to a PDB file.
 Currently, only the ``_atom_site`` category can be written back.
 
 """
+
 from __future__ import annotations
 
 import os

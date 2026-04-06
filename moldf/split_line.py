@@ -3,6 +3,7 @@
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Split a line in mmCIF files."""
+
 from __future__ import annotations
 
 

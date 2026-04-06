@@ -21,6 +21,7 @@ key is ``_audit_conform``. The category attributes are ``dict_name``,
 ``dict_version``, and ``dict_location``, so the returned dict value as a
 ``DataFrame`` has the exact column names.
 """
+
 from __future__ import annotations
 
 import io

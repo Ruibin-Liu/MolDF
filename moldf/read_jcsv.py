@@ -8,6 +8,7 @@ Reads a JCSV file into a dict of ``Pandas DataFrame`` s.
 It is not limited to any molecular format.
 
 """
+
 from __future__ import annotations
 
 import csv

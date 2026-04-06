@@ -2,7 +2,7 @@
 # Author: Ruibin Liu <ruibinliuphd@gmail.com>
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/MolDF
-""" ``PDBDataFrame`` as a subclass of ``Pandas DataFrame``.
+"""``PDBDataFrame`` as a subclass of ``Pandas DataFrame``.
 
 Several features are added to make PDB data more accessible and selectable:
 
@@ -18,6 +18,7 @@ like ``df.atom_names([names]).residue_numbers([numbers])``.
 
 3. Distance matrix as a ``@property`` and ``@classmethod``.
 """
+
 from __future__ import annotations
 
 import copy
