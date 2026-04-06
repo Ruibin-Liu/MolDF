@@ -9,6 +9,7 @@ Write a dict of ``Pandas DataFrame`` back to a MOL2 file.
 Currently, only the ``MOLECULE``, ``ATOM``, and ``BOND`` categories can be written back.
 
 """
+
 from __future__ import annotations
 
 import os

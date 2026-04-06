@@ -8,6 +8,7 @@ Read a Tripos ``.mol2`` file into a dictionary of ``pandas DataFrames``. Differe
 categories like 'ATOM' and 'BOND' are read into different DataFrame objects.
 
 """
+
 from __future__ import annotations
 
 import os

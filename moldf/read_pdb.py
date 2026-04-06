@@ -15,6 +15,7 @@ Atom coordinates and sequences are currently supported by the following category
     ``_seq_res``: ``SEQRES`` lines.
 
 """
+
 from __future__ import annotations
 
 import io

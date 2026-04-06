@@ -3,6 +3,7 @@
 # License: MIT
 # Code Repository: https://github.com/Ruibin-Liu/MolDF
 """Tests for splitting lines in PDBx/mmCIF files."""
+
 import sys
 
 import pytest  # type: ignore

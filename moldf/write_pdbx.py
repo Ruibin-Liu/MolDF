@@ -7,6 +7,7 @@
 Write a dict of ``Pandas DataFrame`` back to a PDBx file.
 
 """
+
 from __future__ import annotations
 
 import os
